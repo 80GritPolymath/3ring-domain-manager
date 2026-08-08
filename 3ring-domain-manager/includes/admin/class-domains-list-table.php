@@ -56,14 +56,14 @@ final class Domains_List_Table extends \WP_List_Table {
 	 */
 	public function get_columns(): array {
 		return array(
-			'domain_name'      => __( 'Domain', '3ring-domain-manager' ),
-			'portfolio_status' => __( 'Status', '3ring-domain-manager' ),
-			'usage_type'       => __( 'Usage', '3ring-domain-manager' ),
-			'registrar'        => __( 'Registrar', '3ring-domain-manager' ),
-			'expires_on'       => __( 'Expires', '3ring-domain-manager' ),
-			'auto_renew'       => __( 'Auto-renew', '3ring-domain-manager' ),
-			'internal_owner'   => __( 'Owner', '3ring-domain-manager' ),
-			'active_card'      => __( 'Active Card', '3ring-domain-manager' ),
+			'domain_name'    => __( 'Domain', '3ring-domain-manager' ),
+			'status_usage'   => __( 'Status/Usage', '3ring-domain-manager' ),
+			'whois'          => __( 'WhoIs', '3ring-domain-manager' ),
+			'registrar'      => __( 'Registrar', '3ring-domain-manager' ),
+			'expires_on'     => __( 'Expires', '3ring-domain-manager' ),
+			'auto_renew'     => __( 'Auto-renew', '3ring-domain-manager' ),
+			'internal_owner' => __( 'Owner', '3ring-domain-manager' ),
+			'active_card'    => __( 'Active Card', '3ring-domain-manager' ),
 		);
 	}
 
@@ -83,14 +83,14 @@ final class Domains_List_Table extends \WP_List_Table {
 	 */
 	private function client_sort_types(): array {
 		return array(
-			'domain_name'      => 'text',
-			'portfolio_status' => 'text',
-			'usage_type'       => 'text',
-			'registrar'        => 'text',
-			'expires_on'       => 'date',
-			'auto_renew'       => 'text',
-			'internal_owner'   => 'text',
-			'active_card'      => 'text',
+			'domain_name'    => 'text',
+			'status_usage'   => 'text',
+			'whois'          => 'text',
+			'registrar'      => 'text',
+			'expires_on'     => 'date',
+			'auto_renew'     => 'text',
+			'internal_owner' => 'text',
+			'active_card'    => 'text',
 		);
 	}
 
@@ -160,15 +160,17 @@ final class Domains_List_Table extends \WP_List_Table {
 	private function sort_value( $item, string $column_name ): string {
 		switch ( $column_name ) {
 			case 'domain_name':
+			case 'whois':
 				return strtolower( (string) $item->domain_name );
-			case 'portfolio_status':
-				$labels = Schema::portfolio_statuses();
-				$status = (string) $item->portfolio_status;
-				return strtolower( (string) ( $labels[ $status ] ?? $status ) );
-			case 'usage_type':
-				$labels = Schema::usage_types();
-				$usage  = (string) $item->usage_type;
-				return strtolower( (string) ( $labels[ $usage ] ?? $usage ) );
+			case 'status_usage':
+				$status_labels = Schema::portfolio_statuses();
+				$usage_labels  = Schema::usage_types();
+				$status        = (string) $item->portfolio_status;
+				$usage         = (string) $item->usage_type;
+				return strtolower(
+					(string) ( $status_labels[ $status ] ?? $status ) . ' ' .
+					(string) ( $usage_labels[ $usage ] ?? $usage )
+				);
 			case 'registrar':
 				if ( empty( $item->registrar_id ) ) {
 					return '';
@@ -344,27 +346,35 @@ final class Domains_List_Table extends \WP_List_Table {
 	}
 
 	/**
-	 * Status column.
+	 * Combined Status/Usage column.
 	 *
 	 * @param object $item Item.
 	 */
-	protected function column_portfolio_status( $item ): string {
-		$labels = Schema::portfolio_statuses();
-		$status = (string) $item->portfolio_status;
+	protected function column_status_usage( $item ): string {
+		$status_labels = Schema::portfolio_statuses();
+		$usage_labels  = Schema::usage_types();
+		$status        = (string) $item->portfolio_status;
+		$usage         = (string) $item->usage_type;
 
-		return Ui::badge( $labels[ $status ] ?? $status, Ui::status_tone( $status ) );
+		return '<span class="dm-status-usage">'
+			. Ui::badge( $status_labels[ $status ] ?? $status, Ui::status_tone( $status ) )
+			. Ui::badge( $usage_labels[ $usage ] ?? $usage, Ui::usage_tone( $usage ), true )
+			. '</span>';
 	}
 
 	/**
-	 * Usage column.
+	 * WhoIs lookup column (DomainTools).
 	 *
 	 * @param object $item Item.
 	 */
-	protected function column_usage_type( $item ): string {
-		$labels = Schema::usage_types();
-		$usage  = (string) $item->usage_type;
+	protected function column_whois( $item ): string {
+		$domain = (string) $item->domain_name;
+		$url    = 'https://whois.domaintools.com/' . rawurlencode( $domain );
 
-		return Ui::badge( $labels[ $usage ] ?? $usage, Ui::usage_tone( $usage ), true );
+		return '<a class="dm-whois-link" href="' . esc_url( $url ) . '" target="_blank" rel="noopener noreferrer">'
+			. esc_html__( 'VERIFY', '3ring-domain-manager' )
+			. Ui::icon( 'external' )
+			. '</a>';
 	}
 
 	/**
