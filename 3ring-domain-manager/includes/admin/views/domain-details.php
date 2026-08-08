@@ -164,9 +164,16 @@ $notices = array(
 					<th><?php esc_html_e( 'Portfolio status', '3ring-domain-manager' ); ?></th>
 					<td>
 						<?php
-						echo Ui::badge( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							$portfolio_labels[ $portfolio_status ] ?? $portfolio_status,
-							Ui::status_tone( $portfolio_status )
+						echo wp_kses(
+							Ui::badge(
+								$portfolio_labels[ $portfolio_status ] ?? $portfolio_status,
+								Ui::status_tone( $portfolio_status )
+							),
+							array(
+								'span' => array(
+									'class' => true,
+								),
+							)
 						);
 						?>
 					</td>
@@ -175,9 +182,16 @@ $notices = array(
 					<th><?php esc_html_e( 'Usage type', '3ring-domain-manager' ); ?></th>
 					<td>
 						<?php
-						echo Ui::badge( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							$usage_labels[ $usage_type ] ?? $usage_type,
-							Ui::usage_tone( $usage_type )
+						echo wp_kses(
+							Ui::badge(
+								$usage_labels[ $usage_type ] ?? $usage_type,
+								Ui::usage_tone( $usage_type )
+							),
+							array(
+								'span' => array(
+									'class' => true,
+								),
+							)
 						);
 						?>
 					</td>
@@ -242,9 +256,16 @@ $notices = array(
 					<th><?php esc_html_e( 'Auto-renew', '3ring-domain-manager' ); ?></th>
 					<td>
 						<?php
-						echo Ui::badge( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							$auto_renew_labels[ $auto_renew ] ?? $auto_renew,
-							Ui::auto_renew_tone( $auto_renew )
+						echo wp_kses(
+							Ui::badge(
+								$auto_renew_labels[ $auto_renew ] ?? $auto_renew,
+								Ui::auto_renew_tone( $auto_renew )
+							),
+							array(
+								'span' => array(
+									'class' => true,
+								),
+							)
 						);
 						?>
 					</td>

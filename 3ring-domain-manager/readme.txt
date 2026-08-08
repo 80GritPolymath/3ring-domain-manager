@@ -1,8 +1,8 @@
 === 3RING Domain Manager ===
 Contributors: 3ring
-Tags: domains, domain portfolio, registrar, dns, renewals, expiry alerts
+Tags: domains, registrar, dns, renewals, portfolio
 Requires at least: 6.0
-Tested up to: 6.8
+Tested up to: 7.0
 Stable tag: 1.0.0
 Requires PHP: 7.4
 License: GPLv2 or later

@@ -9,6 +9,8 @@
 .eslintrc
 .phpcs.xml
 .phpcs.xml.dist
+phpcs.xml
+phpcs.xml.dist
 .phpunit.xml
 .phpunit.xml.dist
 composer.json
@@ -25,3 +27,5 @@ Thumbs.db
 README.md
 .gitignore
 .distignore
+**/.DS_Store
+.DS_Store

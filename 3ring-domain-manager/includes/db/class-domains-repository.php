@@ -228,15 +228,18 @@ final class Domains_Repository {
 			ARRAY_A
 		);
 
+		$providers_table = Schema::table( 'providers' );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- Table names from Schema::table().
 		$by_registrar = $wpdb->get_results(
 			"SELECT COALESCE(p.name, 'Unassigned') AS label, COUNT(*) AS total
 			 FROM {$table} d
-			 LEFT JOIN " . Schema::table( 'providers' ) . " p ON p.id = d.registrar_id
+			 LEFT JOIN {$providers_table} p ON p.id = d.registrar_id
 			 WHERE d.archived_at IS NULL
 			 GROUP BY d.registrar_id
-			 ORDER BY total DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			 ORDER BY total DESC",
 			ARRAY_A
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 
 		$recent = $wpdb->get_results(
 			"SELECT id, domain_name, updated_at FROM {$table} ORDER BY updated_at DESC LIMIT 8" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared

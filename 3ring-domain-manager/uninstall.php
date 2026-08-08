@@ -11,26 +11,26 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-$settings = get_option( 'dm_settings', array() );
-$drop     = ! empty( $settings['drop_tables_on_uninstall'] );
+$dm_settings = get_option( 'dm_settings', array() );
+$dm_drop     = ! empty( $dm_settings['drop_tables_on_uninstall'] );
 
 delete_option( 'dm_settings' );
 delete_option( 'dm_db_version' );
 delete_option( 'dm_missing_admin_user' );
 delete_option( 'dm_plugin_admin_user_id' );
 
-$timestamp = wp_next_scheduled( 'dm_daily_alert_check' );
-if ( $timestamp ) {
-	wp_unschedule_event( $timestamp, 'dm_daily_alert_check' );
+$dm_timestamp = wp_next_scheduled( 'dm_daily_alert_check' );
+if ( $dm_timestamp ) {
+	wp_unschedule_event( $dm_timestamp, 'dm_daily_alert_check' );
 }
 
-if ( ! $drop ) {
+if ( ! $dm_drop ) {
 	return;
 }
 
 global $wpdb;
 
-$tables = array(
+$dm_tables = array(
 	$wpdb->prefix . 'dm_providers',
 	$wpdb->prefix . 'dm_domains',
 	$wpdb->prefix . 'dm_renewals',
@@ -41,7 +41,7 @@ $tables = array(
 	$wpdb->prefix . 'dm_audit_log',
 );
 
-foreach ( $tables as $table ) {
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$wpdb->query( "DROP TABLE IF EXISTS {$table}" );
+foreach ( $dm_tables as $dm_table ) {
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Uninstall table drop.
+	$wpdb->query( "DROP TABLE IF EXISTS {$dm_table}" );
 }
