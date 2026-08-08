@@ -1,0 +1,17 @@
+.DS_Store
+**/.DS_Store
+.cursor/
+.context-mode/
+node_modules/
+*.log
+.idea/
+.vscode/
+*.swp
+*~
+
+# Local work folder only — never publish
+1_dev_docs/
+
+# Local release artifacts (WordPress.org builds zips from SVN)
+dist/
+*.zip

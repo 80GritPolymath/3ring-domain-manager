@@ -1,0 +1,66 @@
+<?php
+/**
+ * Notes repository.
+ *
+ * @package ThreeRing\DomainManager
+ */
+
+declare(strict_types=1);
+
+namespace ThreeRing\DomainManager\Db;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class Notes_Repository
+ */
+final class Notes_Repository {
+
+	/**
+	 * Table name.
+	 */
+	private function table(): string {
+		return Schema::table( 'notes' );
+	}
+
+	/**
+	 * List notes for a domain.
+	 *
+	 * @param int $domain_id Domain ID.
+	 * @return object[]
+	 */
+	public function list_for_domain( int $domain_id ): array {
+		global $wpdb;
+
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM ' . $this->table() . ' WHERE domain_id = %d ORDER BY created_at DESC', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$domain_id
+			)
+		);
+
+		return is_array( $results ) ? $results : array();
+	}
+
+	/**
+	 * Insert note.
+	 *
+	 * @param int    $domain_id Domain ID.
+	 * @param string $body      Note body.
+	 * @return int|false
+	 */
+	public function insert( int $domain_id, string $body ) {
+		global $wpdb;
+
+		$result = $wpdb->insert(
+			$this->table(),
+			array(
+				'domain_id'   => $domain_id,
+				'note_body'   => $body,
+				'created_by'  => get_current_user_id() ?: null,
+			)
+		);
+
+		return false === $result ? false : (int) $wpdb->insert_id;
+	}
+}

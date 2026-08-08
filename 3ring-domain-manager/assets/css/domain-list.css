@@ -1,0 +1,61 @@
+/* Fallback stylesheet. Critical styles are also inlined by the shortcode. */
+
+.dm-domain-list {
+	margin: 1.5rem 0;
+	overflow-x: auto;
+}
+
+.dm-domain-list table.dm-domain-list-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.95rem;
+}
+
+.dm-domain-list table.dm-domain-list-table th,
+.dm-domain-list table.dm-domain-list-table td {
+	border: 1px solid #d0d0d0;
+	padding: 0.6rem 0.75rem;
+	text-align: left;
+	vertical-align: top;
+	background: #fff;
+	color: #111;
+}
+
+.dm-domain-list table.dm-domain-list-table thead th {
+	background: #f3f3f3 !important;
+	color: #111 !important;
+	font-weight: 600;
+}
+
+.dm-domain-list table.dm-domain-list-table tbody tr:nth-child(even) td {
+	background: #fafafa;
+}
+
+.dm-domain-list table.dm-domain-list-table thead th.dm-th-sort {
+	cursor: pointer;
+	user-select: none;
+	background: #f3f3f3 !important;
+	color: #111 !important;
+}
+
+.dm-domain-list table.dm-domain-list-table thead th.dm-th-sort:hover,
+.dm-domain-list table.dm-domain-list-table thead th.dm-th-sort.dm-th-sort-hover {
+	background: #e9e9e9 !important;
+	color: #111 !important;
+}
+
+.dm-domain-list table.dm-domain-list-table thead th.dm-th-sort::after {
+	content: " \2195";
+	font-weight: 400;
+	opacity: 0.45;
+}
+
+.dm-domain-list table.dm-domain-list-table thead th.dm-th-sort.dm-th-sort-asc::after {
+	content: " \2191";
+	opacity: 1;
+}
+
+.dm-domain-list table.dm-domain-list-table thead th.dm-th-sort.dm-th-sort-desc::after {
+	content: " \2193";
+	opacity: 1;
+}
