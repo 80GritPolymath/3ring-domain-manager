@@ -24,7 +24,7 @@ final class Import_Export_Page {
 	 * Handle export / template download early.
 	 */
 	public static function maybe_handle_export(): void {
-		if ( ! isset( $_GET['page'] ) || 'dm-import-export' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['page'] ) || 'rindoma-import-export' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
@@ -34,8 +34,8 @@ final class Import_Export_Page {
 
 		$csv = new Csv_Service();
 
-		if ( isset( $_GET['dm_export'] ) && '1' === $_GET['dm_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			check_admin_referer( 'dm_export_csv' );
+		if ( isset( $_GET['rindoma_export'] ) && '1' === $_GET['rindoma_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			check_admin_referer( 'rindoma_export_csv' );
 			$filters = array();
 			if ( ! empty( $_GET['show_archived'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$filters['show_archived'] = 1;
@@ -43,8 +43,8 @@ final class Import_Export_Page {
 			$csv->export( $filters );
 		}
 
-		if ( isset( $_GET['dm_template'] ) && '1' === $_GET['dm_template'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			check_admin_referer( 'dm_csv_template' );
+		if ( isset( $_GET['rindoma_template'] ) && '1' === $_GET['rindoma_template'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			check_admin_referer( 'rindoma_csv_template' );
 			$csv->download_template();
 		}
 	}
@@ -58,14 +58,15 @@ final class Import_Export_Page {
 		}
 
 		if ( ! Schema::tables_exist() ) {
-			echo '<div class="wrap"><h1>Import / Export</h1><div class="notice notice-error"><p>' . esc_html__( 'Database tables are missing.', '3ring-domain-manager' ) . '</p></div></div>';
+			echo '<div class="wrap"><h1>' . esc_html__( 'Import / Export', '3ring-domain-manager' ) . '</h1><div class="notice notice-error"><p>' . esc_html__( 'Database tables are missing.', '3ring-domain-manager' ) . '</p></div></div>';
 			return;
 		}
 
 		$result = null;
-		if ( ! empty( $_POST['dm_import_csv'] ) ) {
-			check_admin_referer( 'dm_import_csv' );
-			if ( empty( $_FILES['csv_file']['tmp_name'] ) ) {
+		if ( ! empty( $_POST['rindoma_import_csv'] ) ) {
+			check_admin_referer( 'rindoma_import_csv' );
+			$tmp_name = isset( $_FILES['csv_file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['csv_file']['tmp_name'] ) ) : '';
+			if ( '' === $tmp_name || ! is_uploaded_file( $tmp_name ) ) {
 				$result = array(
 					'created' => 0,
 					'updated' => 0,
@@ -73,7 +74,7 @@ final class Import_Export_Page {
 				);
 			} else {
 				$update = ! empty( $_POST['update_existing'] );
-				$result = ( new Csv_Service() )->import( $_FILES['csv_file']['tmp_name'], $update );
+				$result = ( new Csv_Service() )->import( $tmp_name, $update );
 			}
 		}
 		?>
@@ -88,7 +89,7 @@ final class Import_Export_Page {
 			?>
 
 			<?php if ( is_array( $result ) ) : ?>
-				<div class="notice notice-<?php echo empty( $result['errors'] ) ? 'success' : 'warning'; ?> is-dismissible">
+				<div class="notice notice-<?php echo esc_attr( empty( $result['errors'] ) ? 'success' : 'warning' ); ?> is-dismissible">
 					<p>
 						<?php
 						echo esc_html(
@@ -114,15 +115,15 @@ final class Import_Export_Page {
 			<div class="dm-grid dm-grid--wide">
 				<div class="dm-panel">
 					<div class="dm-panel__head">
-						<h2><?php echo Ui::icon( 'file' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Export', '3ring-domain-manager' ); ?></h2>
+						<h2><?php Ui::print_icon( 'file' ); ?><?php esc_html_e( 'Export', '3ring-domain-manager' ); ?></h2>
 					</div>
 					<div class="dm-panel__body">
 					<p class="description"><?php esc_html_e( 'Download the current domain portfolio as CSV.', '3ring-domain-manager' ); ?></p>
 					<p class="dm-actions">
-						<a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=dm-import-export&dm_export=1' ), 'dm_export_csv' ) ); ?>">
+						<a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=rindoma-import-export&rindoma_export=1' ), 'rindoma_export_csv' ) ); ?>">
 							<?php esc_html_e( 'Export domains CSV', '3ring-domain-manager' ); ?>
 						</a>
-						<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=dm-import-export&dm_template=1' ), 'dm_csv_template' ) ); ?>">
+						<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=rindoma-import-export&rindoma_template=1' ), 'rindoma_csv_template' ) ); ?>">
 							<?php esc_html_e( 'Download CSV template', '3ring-domain-manager' ); ?>
 						</a>
 					</p>
@@ -131,13 +132,13 @@ final class Import_Export_Page {
 
 				<div class="dm-panel">
 					<div class="dm-panel__head">
-						<h2><?php echo Ui::icon( 'transfer' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Import', '3ring-domain-manager' ); ?></h2>
+						<h2><?php Ui::print_icon( 'transfer' ); ?><?php esc_html_e( 'Import', '3ring-domain-manager' ); ?></h2>
 					</div>
 					<div class="dm-panel__body">
 					<p class="description"><?php esc_html_e( 'Upload a CSV using the template columns. Registrar and provider columns must match existing provider names.', '3ring-domain-manager' ); ?></p>
 					<form method="post" enctype="multipart/form-data">
-						<?php wp_nonce_field( 'dm_import_csv' ); ?>
-						<input type="hidden" name="dm_import_csv" value="1" />
+						<?php wp_nonce_field( 'rindoma_import_csv' ); ?>
+						<input type="hidden" name="rindoma_import_csv" value="1" />
 						<p><input type="file" name="csv_file" accept=".csv,text/csv" required /></p>
 						<p>
 							<label>

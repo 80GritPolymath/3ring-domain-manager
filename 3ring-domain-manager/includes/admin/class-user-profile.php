@@ -52,7 +52,7 @@ final class User_Profile {
 		<table class="form-table" role="presentation">
 			<tr>
 				<th>
-					<label for="dm_is_domain_manager">
+					<label for="rindoma_is_domain_manager">
 						<?php esc_html_e( 'Domain Manager', '3ring-domain-manager' ); ?>
 					</label>
 				</th>
@@ -65,11 +65,11 @@ final class User_Profile {
 							<?php esc_html_e( 'This account has full Domain Manager plugin administrator access (granted to the user who activated the plugin). That role is managed by the plugin and cannot be removed with this checkbox.', '3ring-domain-manager' ); ?>
 						</p>
 					<?php else : ?>
-						<label for="dm_is_domain_manager">
+						<label for="rindoma_is_domain_manager">
 							<input
 								type="checkbox"
-								name="dm_is_domain_manager"
-								id="dm_is_domain_manager"
+								name="rindoma_is_domain_manager"
+								id="rindoma_is_domain_manager"
 								value="1"
 								<?php checked( $is_manager || user_can( $user, Capabilities::MANAGE ) ); ?>
 							/>
@@ -78,7 +78,7 @@ final class User_Profile {
 						<p class="description">
 							<?php esc_html_e( 'Allows this user to view and edit domains, record renewals, import/export, manage providers, and receive expiry alert emails.', '3ring-domain-manager' ); ?>
 						</p>
-						<?php wp_nonce_field( 'dm_save_user_profile_' . $user->ID, 'dm_user_profile_nonce' ); ?>
+						<?php wp_nonce_field( 'rindoma_save_user_profile_' . $user->ID, 'rindoma_user_profile_nonce' ); ?>
 					<?php endif; ?>
 				</td>
 			</tr>
@@ -107,13 +107,13 @@ final class User_Profile {
 		}
 
 		if (
-			! isset( $_POST['dm_user_profile_nonce'] ) ||
-			! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['dm_user_profile_nonce'] ) ), 'dm_save_user_profile_' . $user_id )
+			! isset( $_POST['rindoma_user_profile_nonce'] ) ||
+			! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['rindoma_user_profile_nonce'] ) ), 'rindoma_save_user_profile_' . $user_id )
 		) {
 			return;
 		}
 
-		$grant = isset( $_POST['dm_is_domain_manager'] ) && '1' === $_POST['dm_is_domain_manager'];
+		$grant = isset( $_POST['rindoma_is_domain_manager'] ) && '1' === $_POST['rindoma_is_domain_manager'];
 
 		if ( $grant ) {
 			Capabilities::grant_manager( $user );

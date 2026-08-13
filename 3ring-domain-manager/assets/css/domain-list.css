@@ -1,4 +1,4 @@
-/* Fallback stylesheet. Critical styles are also inlined by the shortcode. */
+/* Frontend [3ring-domain-list] stylesheet. Extra-specificity rules are also attached via wp_add_inline_style(). */
 
 .dm-domain-list {
 	margin: 1.5rem 0;

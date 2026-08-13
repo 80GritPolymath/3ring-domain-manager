@@ -26,6 +26,8 @@ use ThreeRing\DomainManager\Services\Document_Service;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Template is included from a class method; these variables are not true globals.
+
 $val = static function ( $field, $default = '' ) use ( $domain ) {
 	if ( ! $domain ) {
 		return $default;
@@ -45,10 +47,10 @@ foreach ( $registrars as $registrar_option ) {
 	}
 }
 
-$dm_header_actions = array();
+$rindoma_header_actions = array();
 
 if ( ! $is_new && $registrar_mgmt_url ) {
-	$dm_header_actions[] = array(
+	$rindoma_header_actions[] = array(
 		'label'  => __( 'Registrar management', '3ring-domain-manager' ),
 		'url'    => $registrar_mgmt_url,
 		'icon'   => 'external',
@@ -57,9 +59,9 @@ if ( ! $is_new && $registrar_mgmt_url ) {
 }
 
 if ( ! $is_new ) {
-	$dm_header_actions[] = array(
+	$rindoma_header_actions[] = array(
 		'label' => __( 'Back to domains', '3ring-domain-manager' ),
-		'url'   => admin_url( 'admin.php?page=dm-domains' ),
+		'url'   => admin_url( 'admin.php?page=rindoma-domains' ),
 		'icon'  => 'globe',
 		'solid' => true,
 	);
@@ -73,15 +75,15 @@ if ( ! $is_new ) {
 			'subtitle' => $is_new
 				? __( 'Register a new domain record with ownership, registration and DNS details.', '3ring-domain-manager' )
 				: __( 'Update registration, DNS and ownership details, then record renewals or notes below.', '3ring-domain-manager' ),
-			'actions'  => $dm_header_actions,
+			'actions'  => $rindoma_header_actions,
 		)
 	);
 	?>
-	<?php settings_errors( 'dm_domain' ); ?>
+	<?php settings_errors( 'rindoma_domain' ); ?>
 
 	<form method="post" action="">
-		<?php wp_nonce_field( 'dm_save_domain_' . $domain_id ); ?>
-		<input type="hidden" name="dm_save_domain" value="1" />
+		<?php wp_nonce_field( 'rindoma_save_domain_' . $domain_id ); ?>
+		<input type="hidden" name="rindoma_save_domain" value="1" />
 
 		<div class="dm-grid dm-grid--wide">
 			<fieldset class="dm-fieldset">
@@ -292,13 +294,13 @@ if ( ! $is_new ) {
 		<div class="dm-grid">
 			<div class="dm-panel">
 				<div class="dm-panel__head">
-					<h2><?php echo Ui::icon( 'check' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Review', '3ring-domain-manager' ); ?></h2>
+					<h2><?php Ui::print_icon( 'check' ); ?><?php esc_html_e( 'Review', '3ring-domain-manager' ); ?></h2>
 				</div>
 				<div class="dm-panel__body">
 					<p class="description"><?php esc_html_e( 'Confirm the record is still accurate and reset the review clock.', '3ring-domain-manager' ); ?></p>
 					<form method="post">
-						<?php wp_nonce_field( 'dm_side_' . $domain_id ); ?>
-						<input type="hidden" name="dm_side_action" value="mark_reviewed" />
+						<?php wp_nonce_field( 'rindoma_side_' . $domain_id ); ?>
+						<input type="hidden" name="rindoma_side_action" value="mark_reviewed" />
 						<?php submit_button( __( 'Mark reviewed today', '3ring-domain-manager' ), 'secondary', 'submit', false ); ?>
 					</form>
 				</div>
@@ -306,12 +308,12 @@ if ( ! $is_new ) {
 
 			<div class="dm-panel">
 				<div class="dm-panel__head">
-					<h2><?php echo Ui::icon( 'calendar' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Record renewal', '3ring-domain-manager' ); ?></h2>
+					<h2><?php Ui::print_icon( 'calendar' ); ?><?php esc_html_e( 'Record renewal', '3ring-domain-manager' ); ?></h2>
 				</div>
 				<div class="dm-panel__body">
 				<form method="post" enctype="multipart/form-data">
-					<?php wp_nonce_field( 'dm_side_' . $domain_id ); ?>
-					<input type="hidden" name="dm_side_action" value="add_renewal" />
+					<?php wp_nonce_field( 'rindoma_side_' . $domain_id ); ?>
+					<input type="hidden" name="rindoma_side_action" value="add_renewal" />
 					<p><label><?php esc_html_e( 'Renewed on', '3ring-domain-manager' ); ?><br /><input type="date" name="renewed_on" value="<?php echo esc_attr( current_time( 'Y-m-d' ) ); ?>" required /></label></p>
 					<p><label><?php esc_html_e( 'New expiry date', '3ring-domain-manager' ); ?><br /><input type="date" name="new_expires_on" required /></label></p>
 					<p><label><?php esc_html_e( 'Cost', '3ring-domain-manager' ); ?><br /><input type="number" step="0.01" name="cost" class="small-text" /></label>
@@ -326,12 +328,12 @@ if ( ! $is_new ) {
 
 			<div class="dm-panel">
 				<div class="dm-panel__head">
-					<h2><?php echo Ui::icon( 'file' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Add note', '3ring-domain-manager' ); ?></h2>
+					<h2><?php Ui::print_icon( 'file' ); ?><?php esc_html_e( 'Add note', '3ring-domain-manager' ); ?></h2>
 				</div>
 				<div class="dm-panel__body">
 				<form method="post">
-					<?php wp_nonce_field( 'dm_side_' . $domain_id ); ?>
-					<input type="hidden" name="dm_side_action" value="add_note" />
+					<?php wp_nonce_field( 'rindoma_side_' . $domain_id ); ?>
+					<input type="hidden" name="rindoma_side_action" value="add_note" />
 					<textarea name="note_body" class="large-text" rows="3" required></textarea>
 					<?php submit_button( __( 'Add note', '3ring-domain-manager' ), 'secondary', 'submit', false ); ?>
 				</form>
@@ -340,12 +342,12 @@ if ( ! $is_new ) {
 
 			<div class="dm-panel">
 				<div class="dm-panel__head">
-					<h2><?php echo Ui::icon( 'transfer' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Upload document', '3ring-domain-manager' ); ?></h2>
+					<h2><?php Ui::print_icon( 'transfer' ); ?><?php esc_html_e( 'Upload document', '3ring-domain-manager' ); ?></h2>
 				</div>
 				<div class="dm-panel__body">
 				<form method="post" enctype="multipart/form-data">
-					<?php wp_nonce_field( 'dm_side_' . $domain_id ); ?>
-					<input type="hidden" name="dm_side_action" value="upload_document" />
+					<?php wp_nonce_field( 'rindoma_side_' . $domain_id ); ?>
+					<input type="hidden" name="rindoma_side_action" value="upload_document" />
 					<p><label><?php esc_html_e( 'Title', '3ring-domain-manager' ); ?><br /><input type="text" name="document_title" class="regular-text" /></label></p>
 					<p><label><?php esc_html_e( 'Type', '3ring-domain-manager' ); ?><br />
 						<select name="doc_type">
@@ -391,13 +393,13 @@ if ( ! $is_new ) {
 		?>
 		<div class="dm-panel dm-dns-records">
 			<div class="dm-panel__head">
-				<h2><?php echo Ui::icon( 'server' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'DNS Records', '3ring-domain-manager' ); ?></h2>
+				<h2><?php Ui::print_icon( 'server' ); ?><?php esc_html_e( 'DNS Records', '3ring-domain-manager' ); ?></h2>
 			</div>
 			<div class="dm-panel__body">
 				<?php if ( $can_edit ) : ?>
 					<form method="post" class="dm-dns-records__form">
-						<?php wp_nonce_field( 'dm_side_' . $domain_id ); ?>
-						<input type="hidden" name="dm_side_action" value="save_dns_records" />
+						<?php wp_nonce_field( 'rindoma_side_' . $domain_id ); ?>
+						<input type="hidden" name="rindoma_side_action" value="save_dns_records" />
 
 						<p class="dm-dns-records__provider">
 							<label for="dns_records_provider_id">
@@ -490,7 +492,7 @@ if ( ! $is_new ) {
 						</p>
 					</form>
 				<?php elseif ( empty( $dns_records ) ) : ?>
-					<?php echo Ui::empty_state( __( 'No DNS records recorded yet.', '3ring-domain-manager' ), 'server' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php Ui::print_empty_state( __( 'No DNS records recorded yet.', '3ring-domain-manager' ), 'server' ); ?>
 				<?php else : ?>
 					<?php if ( $dns_provider_label ) : ?>
 						<p class="dm-dns-records__provider-readonly">
@@ -528,11 +530,11 @@ if ( ! $is_new ) {
 
 		<div class="dm-panel">
 			<div class="dm-panel__head">
-				<h2><?php echo Ui::icon( 'calendar' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Renewals', '3ring-domain-manager' ); ?></h2>
+				<h2><?php Ui::print_icon( 'calendar' ); ?><?php esc_html_e( 'Renewals', '3ring-domain-manager' ); ?></h2>
 			</div>
 			<?php if ( empty( $renewals ) ) : ?>
 				<div class="dm-panel__body">
-					<?php echo Ui::empty_state( __( 'No renewals recorded yet.', '3ring-domain-manager' ), 'calendar' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php Ui::print_empty_state( __( 'No renewals recorded yet.', '3ring-domain-manager' ), 'calendar' ); ?>
 				</div>
 			<?php else : ?>
 				<div class="dm-panel__body dm-panel__body--flush">
@@ -565,16 +567,16 @@ if ( ! $is_new ) {
 		<div class="dm-grid">
 			<div class="dm-panel">
 				<div class="dm-panel__head">
-					<h2><?php echo Ui::icon( 'file' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Documents', '3ring-domain-manager' ); ?></h2>
+					<h2><?php Ui::print_icon( 'file' ); ?><?php esc_html_e( 'Documents', '3ring-domain-manager' ); ?></h2>
 				</div>
 				<div class="dm-panel__body">
 					<?php if ( empty( $documents ) ) : ?>
-						<?php echo Ui::empty_state( __( 'No documents uploaded.', '3ring-domain-manager' ), 'file' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php Ui::print_empty_state( __( 'No documents uploaded.', '3ring-domain-manager' ), 'file' ); ?>
 					<?php else : ?>
 						<ul class="dm-docs">
 							<?php foreach ( $documents as $doc ) : ?>
 								<li>
-									<?php echo Ui::icon( 'file' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+									<?php Ui::print_icon( 'file' ); ?>
 									<a href="<?php echo esc_url( Document_Service::download_url( (int) $doc->id ) ); ?>">
 										<?php echo esc_html( $doc->title ); ?>
 									</a>
@@ -588,11 +590,11 @@ if ( ! $is_new ) {
 
 			<div class="dm-panel">
 				<div class="dm-panel__head">
-					<h2><?php echo Ui::icon( 'bell' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Notes', '3ring-domain-manager' ); ?></h2>
+					<h2><?php Ui::print_icon( 'bell' ); ?><?php esc_html_e( 'Notes', '3ring-domain-manager' ); ?></h2>
 				</div>
 				<div class="dm-panel__body">
 					<?php if ( empty( $notes ) ) : ?>
-						<?php echo Ui::empty_state( __( 'No notes yet.', '3ring-domain-manager' ), 'file' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php Ui::print_empty_state( __( 'No notes yet.', '3ring-domain-manager' ), 'file' ); ?>
 					<?php else : ?>
 						<?php foreach ( $notes as $note ) : ?>
 							<div class="dm-note">
@@ -607,11 +609,11 @@ if ( ! $is_new ) {
 
 		<div class="dm-panel">
 			<div class="dm-panel__head">
-				<h2><?php echo Ui::icon( 'clock' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Activity / audit', '3ring-domain-manager' ); ?></h2>
+				<h2><?php Ui::print_icon( 'clock' ); ?><?php esc_html_e( 'Activity / audit', '3ring-domain-manager' ); ?></h2>
 			</div>
 			<?php if ( empty( $audit ) ) : ?>
 				<div class="dm-panel__body">
-					<?php echo Ui::empty_state( __( 'No activity recorded.', '3ring-domain-manager' ), 'clock' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php Ui::print_empty_state( __( 'No activity recorded.', '3ring-domain-manager' ), 'clock' ); ?>
 				</div>
 			<?php else : ?>
 				<div class="dm-panel__body dm-panel__body--flush">

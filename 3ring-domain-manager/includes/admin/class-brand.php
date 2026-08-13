@@ -50,10 +50,10 @@ final class Brand {
 	}
 
 	/**
-	 * Brand color from dm_settings (with default).
+	 * Brand color from rindoma_settings (with default).
 	 */
 	public static function get_color(): string {
-		$settings = get_option( 'dm_settings', array() );
+		$settings = get_option( 'rindoma_settings', array() );
 		$color    = is_array( $settings ) && isset( $settings['brand_color'] ) ? $settings['brand_color'] : self::DEFAULT_COLOR;
 
 		return self::sanitize( $color );
@@ -90,13 +90,13 @@ final class Brand {
 
 		return sprintf(
 			'body.dm-page{--dm-brand:%1$s;--dm-brand-dark:%2$s;--dm-brand-darker:%3$s;--dm-brand-tint:%4$s;--dm-brand-tint-strong:%5$s;--dm-brand-accent:%6$s;--dm-brand-rgb:%7$s;}',
-			$p['brand'],
-			$p['dark'],
-			$p['darker'],
-			$p['tint'],
-			$p['tint_strong'],
-			$p['accent'],
-			$p['rgb']
+			esc_attr( $p['brand'] ),
+			esc_attr( $p['dark'] ),
+			esc_attr( $p['darker'] ),
+			esc_attr( $p['tint'] ),
+			esc_attr( $p['tint_strong'] ),
+			esc_attr( $p['accent'] ),
+			esc_attr( $p['rgb'] )
 		);
 	}
 

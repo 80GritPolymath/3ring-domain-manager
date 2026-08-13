@@ -13,6 +13,8 @@ use ThreeRing\DomainManager\Services\Domain_Normalizer;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Custom tables; names come from Schema::table(), values use $wpdb->prepare().
+
 /**
  * Class Domains_Repository
  */
@@ -229,8 +231,7 @@ final class Domains_Repository {
 		);
 
 		$providers_table = Schema::table( 'providers' );
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- Table names from Schema::table().
-		$by_registrar = $wpdb->get_results(
+		$by_registrar    = $wpdb->get_results(
 			"SELECT COALESCE(p.name, 'Unassigned') AS label, COUNT(*) AS total
 			 FROM {$table} d
 			 LEFT JOIN {$providers_table} p ON p.id = d.registrar_id
@@ -239,10 +240,9 @@ final class Domains_Repository {
 			 ORDER BY total DESC",
 			ARRAY_A
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 
 		$recent = $wpdb->get_results(
-			"SELECT id, domain_name, updated_at FROM {$table} ORDER BY updated_at DESC LIMIT 8" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			"SELECT id, domain_name, updated_at FROM {$table} ORDER BY updated_at DESC LIMIT 8"
 		);
 
 		return array(
@@ -267,7 +267,7 @@ final class Domains_Repository {
 		$normalized = Domain_Normalizer::normalize( (string) ( $data['domain_name'] ?? '' ) );
 
 		$review_days = 180;
-		$settings    = get_option( 'dm_settings', array() );
+		$settings    = get_option( 'rindoma_settings', array() );
 		if ( ! empty( $settings['review_interval_days'] ) ) {
 			$review_days = (int) $settings['review_interval_days'];
 		}
@@ -327,14 +327,14 @@ final class Domains_Repository {
 		}
 
 		if ( $this->get_by_normalized( $row['domain_name_normalized'] ) ) {
-			return new \WP_Error( 'dm_duplicate', __( 'A domain with this name already exists.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_duplicate', __( 'A domain with this name already exists.', '3ring-domain-manager' ) );
 		}
 
 		$row['created_by'] = get_current_user_id() ?: null;
 
 		$result = $wpdb->insert( $this->table(), $row );
 		if ( false === $result ) {
-			return new \WP_Error( 'dm_db', __( 'Could not save domain.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_db', __( 'Could not save domain.', '3ring-domain-manager' ) );
 		}
 
 		return (int) $wpdb->insert_id;
@@ -352,7 +352,7 @@ final class Domains_Repository {
 
 		$existing = $this->get( $id );
 		if ( ! $existing ) {
-			return new \WP_Error( 'dm_missing', __( 'Domain not found.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_missing', __( 'Domain not found.', '3ring-domain-manager' ) );
 		}
 
 		$row = $this->prepare_row( $data );
@@ -363,12 +363,12 @@ final class Domains_Repository {
 
 		$dup = $this->get_by_normalized( $row['domain_name_normalized'] );
 		if ( $dup && (int) $dup->id !== $id ) {
-			return new \WP_Error( 'dm_duplicate', __( 'A domain with this name already exists.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_duplicate', __( 'A domain with this name already exists.', '3ring-domain-manager' ) );
 		}
 
 		$result = $wpdb->update( $this->table(), $row, array( 'id' => $id ) );
 		if ( false === $result ) {
-			return new \WP_Error( 'dm_db', __( 'Could not update domain.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_db', __( 'Could not update domain.', '3ring-domain-manager' ) );
 		}
 
 		return true;
@@ -380,7 +380,7 @@ final class Domains_Repository {
 	 * @param int $id Domain ID.
 	 */
 	public function mark_reviewed( int $id ): bool {
-		$settings    = get_option( 'dm_settings', array() );
+		$settings    = get_option( 'rindoma_settings', array() );
 		$review_days = ! empty( $settings['review_interval_days'] ) ? (int) $settings['review_interval_days'] : 180;
 		$today       = current_time( 'Y-m-d' );
 		$next        = gmdate( 'Y-m-d', strtotime( $today . ' +' . $review_days . ' days' ) );
@@ -466,22 +466,22 @@ final class Domains_Repository {
 	 */
 	private function validate( array $row ) {
 		if ( empty( $row['domain_name'] ) || empty( $row['domain_name_normalized'] ) ) {
-			return new \WP_Error( 'dm_required', __( 'Domain name is required.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_required', __( 'Domain name is required.', '3ring-domain-manager' ) );
 		}
 		if ( empty( $row['portfolio_status'] ) ) {
-			return new \WP_Error( 'dm_required', __( 'Portfolio status is required.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_required', __( 'Portfolio status is required.', '3ring-domain-manager' ) );
 		}
 		if ( empty( $row['usage_type'] ) ) {
-			return new \WP_Error( 'dm_required', __( 'Usage type is required.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_required', __( 'Usage type is required.', '3ring-domain-manager' ) );
 		}
 		if ( empty( $row['registrar_id'] ) ) {
-			return new \WP_Error( 'dm_required', __( 'Registrar is required.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_required', __( 'Registrar is required.', '3ring-domain-manager' ) );
 		}
 		if ( empty( $row['expires_on'] ) ) {
-			return new \WP_Error( 'dm_required', __( 'Expiry date is required.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_required', __( 'Expiry date is required.', '3ring-domain-manager' ) );
 		}
 		if ( empty( $row['internal_owner'] ) ) {
-			return new \WP_Error( 'dm_required', __( 'Internal owner is required.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_required', __( 'Internal owner is required.', '3ring-domain-manager' ) );
 		}
 
 		return true;

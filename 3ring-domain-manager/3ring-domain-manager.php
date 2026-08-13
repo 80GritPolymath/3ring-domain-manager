@@ -19,14 +19,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DM_VERSION', '1.0.0' );
-define( 'DM_DB_VERSION', '1.0.0' );
-define( 'DM_PLUGIN_FILE', __FILE__ );
-define( 'DM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'DM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'DM_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+define( 'RINDOMA_VERSION', '1.0.0' );
+define( 'RINDOMA_DB_VERSION', '1.0.0' );
+define( 'RINDOMA_PLUGIN_FILE', __FILE__ );
+define( 'RINDOMA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'RINDOMA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'RINDOMA_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
-require_once DM_PLUGIN_DIR . 'includes/class-autoloader.php';
+require_once RINDOMA_PLUGIN_DIR . 'includes/class-autoloader.php';
 
 ThreeRing\DomainManager\Autoloader::register();
 

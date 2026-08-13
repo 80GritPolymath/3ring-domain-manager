@@ -32,7 +32,7 @@ final class Domain_Edit_Page {
 	 * Handle archive / restore / delete from list.
 	 */
 	public static function maybe_handle_list_actions(): void {
-		if ( ! isset( $_GET['page'] ) || 'dm-domains' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['page'] ) || 'rindoma-domains' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
@@ -47,7 +47,7 @@ final class Domain_Edit_Page {
 			wp_die( esc_html__( 'Permission denied.', '3ring-domain-manager' ) );
 		}
 
-		check_admin_referer( 'dm_' . $action . '_' . $domain_id );
+		check_admin_referer( 'rindoma_' . $action . '_' . $domain_id );
 
 		$repo  = new Domains_Repository();
 		$audit = new Audit_Service();
@@ -64,7 +64,7 @@ final class Domain_Edit_Page {
 			$audit->log( 'domain_deleted', $domain_id, 'domain_name', $before ? $before->domain_name : '', '' );
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=dm-domains&message=' . $action ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=rindoma-domains&message=' . $action ) );
 		exit;
 	}
 
@@ -74,18 +74,18 @@ final class Domain_Edit_Page {
 	 * Must run on admin_init so wp_safe_redirect can succeed (page callbacks run too late).
 	 */
 	public static function maybe_handle_post(): void {
-		if ( empty( $_POST['dm_save_domain'] ) && empty( $_POST['dm_side_action'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( empty( $_POST['rindoma_save_domain'] ) && empty( $_POST['rindoma_side_action'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return;
 		}
 
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		if ( 'dm-domain-new' === $page && ! empty( $_POST['dm_save_domain'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( 'rindoma-domain-new' === $page && ! empty( $_POST['rindoma_save_domain'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			self::handle_save( 0 );
 			return;
 		}
 
-		if ( 'dm-domains' !== $page ) {
+		if ( 'rindoma-domains' !== $page ) {
 			return;
 		}
 
@@ -99,7 +99,7 @@ final class Domain_Edit_Page {
 			return;
 		}
 
-		if ( ! empty( $_POST['dm_save_domain'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( ! empty( $_POST['rindoma_save_domain'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			self::handle_save( $domain_id );
 			return;
 		}
@@ -116,7 +116,7 @@ final class Domain_Edit_Page {
 		}
 
 		if ( ! Schema::tables_exist() ) {
-			echo '<div class="wrap"><h1>Domains</h1><div class="notice notice-error"><p>' . esc_html__( 'Database tables are missing.', '3ring-domain-manager' ) . '</p></div></div>';
+			echo '<div class="wrap"><h1>' . esc_html__( 'Domains', '3ring-domain-manager' ) . '</h1><div class="notice notice-error"><p>' . esc_html__( 'Database tables are missing.', '3ring-domain-manager' ) . '</p></div></div>';
 			return;
 		}
 
@@ -143,7 +143,7 @@ final class Domain_Edit_Page {
 		}
 
 		if ( ! Schema::tables_exist() ) {
-			echo '<div class="wrap"><h1>Add Domain</h1><div class="notice notice-error"><p>' . esc_html__( 'Database tables are missing.', '3ring-domain-manager' ) . '</p></div></div>';
+			echo '<div class="wrap"><h1>' . esc_html__( 'Add Domain', '3ring-domain-manager' ) . '</h1><div class="notice notice-error"><p>' . esc_html__( 'Database tables are missing.', '3ring-domain-manager' ) . '</p></div></div>';
 			return;
 		}
 
@@ -160,7 +160,7 @@ final class Domain_Edit_Page {
 		$domain    = $repo->get( $domain_id );
 
 		if ( ! $domain ) {
-			echo '<div class="wrap"><h1>Edit Domain</h1><div class="notice notice-error"><p>' . esc_html__( 'Domain not found.', '3ring-domain-manager' ) . '</p></div></div>';
+			echo '<div class="wrap"><h1>' . esc_html__( 'Edit Domain', '3ring-domain-manager' ) . '</h1><div class="notice notice-error"><p>' . esc_html__( 'Domain not found.', '3ring-domain-manager' ) . '</p></div></div>';
 			return;
 		}
 
@@ -199,7 +199,7 @@ final class Domain_Edit_Page {
 		$dns_records_provider    = $dns_records_provider_id ? $providers->get( $dns_records_provider_id ) : null;
 		$dns_records_provider_name = $dns_records_provider ? (string) $dns_records_provider->name : '';
 
-		include DM_PLUGIN_DIR . 'includes/admin/views/domain-details.php';
+		include RINDOMA_PLUGIN_DIR . 'includes/admin/views/domain-details.php';
 	}
 
 	/**
@@ -215,7 +215,7 @@ final class Domain_Edit_Page {
 		if ( Capabilities::current_user_can_edit() ) {
 			$actions[] = array(
 				'label' => __( 'Add domain', '3ring-domain-manager' ),
-				'url'   => admin_url( 'admin.php?page=dm-domain-new' ),
+				'url'   => admin_url( 'admin.php?page=rindoma-domain-new' ),
 				'icon'  => 'plus',
 				'solid' => true,
 			);
@@ -236,9 +236,9 @@ final class Domain_Edit_Page {
 			<?php endif; ?>
 			<div class="dm-panel">
 				<form method="get">
-					<input type="hidden" name="page" value="dm-domains" />
+					<input type="hidden" name="page" value="rindoma-domains" />
 					<?php
-					$table->search_box( __( 'Search domains', '3ring-domain-manager' ), 'dm-domain' );
+					$table->search_box( __( 'Search domains', '3ring-domain-manager' ), 'rindoma-domain' );
 					$table->display();
 					?>
 				</form>
@@ -253,7 +253,7 @@ final class Domain_Edit_Page {
 	 * @param int $domain_id Domain ID (0 = create).
 	 */
 	private static function handle_save( int $domain_id ): void {
-		if ( empty( $_POST['dm_save_domain'] ) ) {
+		if ( empty( $_POST['rindoma_save_domain'] ) ) {
 			return;
 		}
 
@@ -261,7 +261,7 @@ final class Domain_Edit_Page {
 			wp_die( esc_html__( 'Permission denied.', '3ring-domain-manager' ) );
 		}
 
-		check_admin_referer( 'dm_save_domain_' . $domain_id );
+		check_admin_referer( 'rindoma_save_domain_' . $domain_id );
 
 		$data = array();
 		$fields = array(
@@ -299,22 +299,22 @@ final class Domain_Edit_Page {
 			$before = $repo->get( $domain_id );
 			$result = $repo->update( $domain_id, $data );
 			if ( is_wp_error( $result ) ) {
-				add_settings_error( 'dm_domain', 'dm_error', $result->get_error_message(), 'error' );
+				add_settings_error( 'rindoma_domain', 'rindoma_error', $result->get_error_message(), 'error' );
 				return;
 			}
 			$after = $repo->get( $domain_id );
 			$audit->log_domain_changes( $domain_id, $before, $after );
-			wp_safe_redirect( admin_url( 'admin.php?page=dm-domains&action=details&domain_id=' . $domain_id . '&message=updated' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=rindoma-domains&action=details&domain_id=' . $domain_id . '&message=updated' ) );
 			exit;
 		}
 
 		$result = $repo->insert( $data );
 		if ( is_wp_error( $result ) ) {
-			add_settings_error( 'dm_domain', 'dm_error', $result->get_error_message(), 'error' );
+			add_settings_error( 'rindoma_domain', 'rindoma_error', $result->get_error_message(), 'error' );
 			return;
 		}
 		$audit->log( 'domain_created', (int) $result );
-		wp_safe_redirect( admin_url( 'admin.php?page=dm-domains&action=details&domain_id=' . (int) $result . '&message=created' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=rindoma-domains&action=details&domain_id=' . (int) $result . '&message=created' ) );
 		exit;
 	}
 
@@ -324,7 +324,7 @@ final class Domain_Edit_Page {
 	 * @param int $domain_id Domain ID.
 	 */
 	private static function handle_side_actions( int $domain_id ): void {
-		if ( empty( $_POST['dm_side_action'] ) ) {
+		if ( empty( $_POST['rindoma_side_action'] ) ) {
 			return;
 		}
 
@@ -332,8 +332,8 @@ final class Domain_Edit_Page {
 			wp_die( esc_html__( 'Permission denied.', '3ring-domain-manager' ) );
 		}
 
-		$action = sanitize_key( wp_unslash( $_POST['dm_side_action'] ) );
-		check_admin_referer( 'dm_side_' . $domain_id );
+		$action = sanitize_key( wp_unslash( $_POST['rindoma_side_action'] ) );
+		check_admin_referer( 'rindoma_side_' . $domain_id );
 
 		$repo  = new Domains_Repository();
 		$audit = new Audit_Service();
@@ -344,7 +344,7 @@ final class Domain_Edit_Page {
 			$repo->mark_reviewed( $domain_id );
 			$after = $repo->get( $domain_id );
 			$audit->log_domain_changes( $domain_id, $before, $after, 'domain_reviewed' );
-			add_settings_error( 'dm_domain', 'dm_reviewed', __( 'Domain marked as reviewed.', '3ring-domain-manager' ), 'updated' );
+			add_settings_error( 'rindoma_domain', 'rindoma_reviewed', __( 'Domain marked as reviewed.', '3ring-domain-manager' ), 'updated' );
 			return;
 		}
 
@@ -353,13 +353,13 @@ final class Domain_Edit_Page {
 			if ( $body ) {
 				( new Notes_Repository() )->insert( $domain_id, $body );
 				$audit->log( 'note_added', $domain_id );
-				add_settings_error( 'dm_domain', 'dm_note', __( 'Note added.', '3ring-domain-manager' ), 'updated' );
+				add_settings_error( 'rindoma_domain', 'rindoma_note', __( 'Note added.', '3ring-domain-manager' ), 'updated' );
 			}
 			return;
 		}
 
 		if ( 'add_renewal' === $action ) {
-			$settings = get_option( 'dm_settings', array() );
+			$settings = get_option( 'rindoma_settings', array() );
 			$currency = $settings['default_currency'] ?? 'CAD';
 			$renewed_on = isset( $_POST['renewed_on'] ) ? sanitize_text_field( wp_unslash( $_POST['renewed_on'] ) ) : current_time( 'Y-m-d' );
 			$new_expires = isset( $_POST['new_expires_on'] ) ? sanitize_text_field( wp_unslash( $_POST['new_expires_on'] ) ) : '';
@@ -368,15 +368,16 @@ final class Domain_Edit_Page {
 			$notes = isset( $_POST['renewal_notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['renewal_notes'] ) ) : '';
 
 			if ( ! $new_expires ) {
-				add_settings_error( 'dm_domain', 'dm_renewal', __( 'New expiry date is required.', '3ring-domain-manager' ), 'error' );
+				add_settings_error( 'rindoma_domain', 'rindoma_renewal', __( 'New expiry date is required.', '3ring-domain-manager' ), 'error' );
 				return;
 			}
 
 			$invoice_id = null;
 			if ( ! empty( $_FILES['invoice_file']['tmp_name'] ) ) {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- File array is validated by wp_handle_upload().
 				$upload = ( new Document_Service() )->upload( $domain_id, $_FILES['invoice_file'], 'Renewal invoice ' . $renewed_on, 'invoice' );
 				if ( is_wp_error( $upload ) ) {
-					add_settings_error( 'dm_domain', 'dm_invoice', $upload->get_error_message(), 'error' );
+					add_settings_error( 'rindoma_domain', 'rindoma_invoice', $upload->get_error_message(), 'error' );
 					return;
 				}
 				$doc = ( new Documents_Repository() )->get( (int) $upload );
@@ -412,7 +413,7 @@ final class Domain_Edit_Page {
 				$after = $repo->get( $domain_id );
 				$audit->log_domain_changes( $domain_id, $before, $after, 'renewal_recorded' );
 				$audit->log( 'renewal_created', $domain_id, 'cost', '', (string) $cost );
-				add_settings_error( 'dm_domain', 'dm_renewal', __( 'Renewal recorded.', '3ring-domain-manager' ), 'updated' );
+				add_settings_error( 'rindoma_domain', 'rindoma_renewal', __( 'Renewal recorded.', '3ring-domain-manager' ), 'updated' );
 			}
 			return;
 		}
@@ -421,16 +422,17 @@ final class Domain_Edit_Page {
 			$title = isset( $_POST['document_title'] ) ? sanitize_text_field( wp_unslash( $_POST['document_title'] ) ) : '';
 			$type  = isset( $_POST['doc_type'] ) ? sanitize_key( wp_unslash( $_POST['doc_type'] ) ) : 'other';
 			if ( empty( $_FILES['document_file']['tmp_name'] ) ) {
-				add_settings_error( 'dm_domain', 'dm_doc', __( 'Please choose a file.', '3ring-domain-manager' ), 'error' );
+				add_settings_error( 'rindoma_domain', 'rindoma_doc', __( 'Please choose a file.', '3ring-domain-manager' ), 'error' );
 				return;
 			}
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- File array is validated by wp_handle_upload().
 			$result = ( new Document_Service() )->upload( $domain_id, $_FILES['document_file'], $title, $type );
 			if ( is_wp_error( $result ) ) {
-				add_settings_error( 'dm_domain', 'dm_doc', $result->get_error_message(), 'error' );
+				add_settings_error( 'rindoma_domain', 'rindoma_doc', $result->get_error_message(), 'error' );
 				return;
 			}
 			$audit->log( 'document_uploaded', $domain_id );
-			add_settings_error( 'dm_domain', 'dm_doc', __( 'Document uploaded.', '3ring-domain-manager' ), 'updated' );
+			add_settings_error( 'rindoma_domain', 'rindoma_doc', __( 'Document uploaded.', '3ring-domain-manager' ), 'updated' );
 			return;
 		}
 
@@ -442,7 +444,7 @@ final class Domain_Edit_Page {
 				$provider = ( new Providers_Repository() )->get( $provider_id );
 				$types    = $provider ? Providers_Repository::parse_types( $provider->provider_type ?? '' ) : array();
 				if ( ! $provider || ! in_array( 'dns', $types, true ) ) {
-					add_settings_error( 'dm_domain', 'dm_dns', __( 'Please choose a provider with DNS status.', '3ring-domain-manager' ), 'error' );
+					add_settings_error( 'rindoma_domain', 'rindoma_dns', __( 'Please choose a provider with DNS status.', '3ring-domain-manager' ), 'error' );
 					return;
 				}
 			}
@@ -468,12 +470,12 @@ final class Domain_Edit_Page {
 
 			$saved = ( new Dns_Records_Repository() )->replace_for_domain( $domain_id, $provider_id, $records );
 			if ( ! $saved ) {
-				add_settings_error( 'dm_domain', 'dm_dns', __( 'Could not save DNS records.', '3ring-domain-manager' ), 'error' );
+				add_settings_error( 'rindoma_domain', 'rindoma_dns', __( 'Could not save DNS records.', '3ring-domain-manager' ), 'error' );
 				return;
 			}
 
 			$audit->log( 'dns_records_saved', $domain_id );
-			wp_safe_redirect( admin_url( 'admin.php?page=dm-domains&action=details&domain_id=' . $domain_id . '&message=dns_saved' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=rindoma-domains&action=details&domain_id=' . $domain_id . '&message=dns_saved' ) );
 			exit;
 		}
 	}
@@ -508,6 +510,6 @@ final class Domain_Edit_Page {
 
 		$can_edit = Capabilities::current_user_can_edit();
 
-		include DM_PLUGIN_DIR . 'includes/admin/views/domain-form.php';
+		include RINDOMA_PLUGIN_DIR . 'includes/admin/views/domain-form.php';
 	}
 }

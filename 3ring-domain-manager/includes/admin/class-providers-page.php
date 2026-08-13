@@ -24,7 +24,7 @@ final class Providers_Page {
 	 * Handle create/update/delete.
 	 */
 	public static function maybe_handle_actions(): void {
-		if ( ! isset( $_GET['page'] ) || 'dm-providers' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['page'] ) || 'rindoma-providers' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
@@ -32,8 +32,8 @@ final class Providers_Page {
 			return;
 		}
 
-		if ( ! empty( $_POST['dm_save_provider'] ) ) {
-			check_admin_referer( 'dm_save_provider' );
+		if ( ! empty( $_POST['rindoma_save_provider'] ) ) {
+			check_admin_referer( 'rindoma_save_provider' );
 			$repo = new Providers_Repository();
 			$data = array(
 				'name'           => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
@@ -48,7 +48,7 @@ final class Providers_Page {
 			);
 
 			if ( empty( $data['provider_type'] ) ) {
-				wp_safe_redirect( admin_url( 'admin.php?page=dm-providers&message=type_required' . ( ! empty( $_POST['provider_id'] ) ? '&edit=' . absint( $_POST['provider_id'] ) : '' ) ) );
+				wp_safe_redirect( admin_url( 'admin.php?page=rindoma-providers&message=type_required' . ( ! empty( $_POST['provider_id'] ) ? '&edit=' . absint( $_POST['provider_id'] ) : '' ) ) );
 				exit;
 			}
 
@@ -59,15 +59,15 @@ final class Providers_Page {
 				$repo->insert( $data );
 			}
 
-			wp_safe_redirect( admin_url( 'admin.php?page=dm-providers&message=saved' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=rindoma-providers&message=saved' ) );
 			exit;
 		}
 
 		if ( isset( $_GET['action'], $_GET['provider_id'] ) && 'delete' === $_GET['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$id = absint( $_GET['provider_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			check_admin_referer( 'dm_delete_provider_' . $id );
+			check_admin_referer( 'rindoma_delete_provider_' . $id );
 			( new Providers_Repository() )->delete( $id );
-			wp_safe_redirect( admin_url( 'admin.php?page=dm-providers&message=deleted' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=rindoma-providers&message=deleted' ) );
 			exit;
 		}
 	}
@@ -81,7 +81,7 @@ final class Providers_Page {
 		}
 
 		if ( ! Schema::tables_exist() ) {
-			echo '<div class="wrap"><h1>Providers</h1><div class="notice notice-error"><p>' . esc_html__( 'Database tables are missing.', '3ring-domain-manager' ) . '</p></div></div>';
+			echo '<div class="wrap"><h1>' . esc_html__( 'Providers', '3ring-domain-manager' ) . '</h1><div class="notice notice-error"><p>' . esc_html__( 'Database tables are missing.', '3ring-domain-manager' ) . '</p></div></div>';
 			return;
 		}
 
@@ -111,7 +111,7 @@ final class Providers_Page {
 			<div class="dm-grid dm-grid--providers">
 				<div class="dm-panel dm-panel--providers-list">
 					<div class="dm-panel__head">
-						<h2><?php echo Ui::icon( 'server' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'All providers', '3ring-domain-manager' ); ?></h2>
+						<h2><?php Ui::print_icon( 'server' ); ?><?php esc_html_e( 'All providers', '3ring-domain-manager' ); ?></h2>
 						<span class="dm-panel__meta">
 							<?php
 							echo esc_html(
@@ -143,23 +143,40 @@ final class Providers_Page {
 									<td>
 										<?php
 										foreach ( Providers_Repository::parse_types( $provider->provider_type ?? '' ) as $provider_type ) {
-											echo Ui::badge( $types[ $provider_type ] ?? $provider_type, 'registrar' === $provider_type ? 'brand' : 'info', true ) . ' '; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+											Ui::print_badge( $types[ $provider_type ] ?? $provider_type, 'registrar' === $provider_type ? 'brand' : 'info', true );
+											echo ' ';
 										}
 										?>
 									</td>
-									<td><?php echo ! empty( $provider->account_id ) ? esc_html( (string) $provider->account_id ) : '<span class="dm-muted">—</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
-									<td><?php echo ! empty( $provider->account_email ) ? esc_html( (string) $provider->account_email ) : '<span class="dm-muted">—</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+									<td>
+										<?php
+										if ( ! empty( $provider->account_id ) ) {
+											echo esc_html( (string) $provider->account_id );
+										} else {
+											Ui::print_muted_dash();
+										}
+										?>
+									</td>
+									<td>
+										<?php
+										if ( ! empty( $provider->account_email ) ) {
+											echo esc_html( (string) $provider->account_email );
+										} else {
+											Ui::print_muted_dash();
+										}
+										?>
+									</td>
 									<td>
 										<?php if ( $provider->management_url ) : ?>
-											<a class="dm-provider__link" href="<?php echo esc_url( $provider->management_url ); ?>" target="_blank" rel="noopener noreferrer"><?php echo Ui::icon( 'external' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Open', '3ring-domain-manager' ); ?></a>
+											<a class="dm-provider__link" href="<?php echo esc_url( $provider->management_url ); ?>" target="_blank" rel="noopener noreferrer"><?php Ui::print_icon( 'external' ); ?><?php esc_html_e( 'Open', '3ring-domain-manager' ); ?></a>
 										<?php else : ?>
 											<span class="dm-muted">—</span>
 										<?php endif; ?>
 									</td>
 									<td>
-										<a href="<?php echo esc_url( admin_url( 'admin.php?page=dm-providers&edit=' . (int) $provider->id ) ); ?>"><?php esc_html_e( 'Edit', '3ring-domain-manager' ); ?></a>
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=rindoma-providers&edit=' . (int) $provider->id ) ); ?>"><?php esc_html_e( 'Edit', '3ring-domain-manager' ); ?></a>
 										<span class="dm-muted">|</span>
-										<a class="dm-confirm-delete" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=dm-providers&action=delete&provider_id=' . (int) $provider->id ), 'dm_delete_provider_' . $provider->id ) ); ?>"><?php esc_html_e( 'Delete', '3ring-domain-manager' ); ?></a>
+										<a class="dm-confirm-delete" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=rindoma-providers&action=delete&provider_id=' . (int) $provider->id ), 'rindoma_delete_provider_' . $provider->id ) ); ?>"><?php esc_html_e( 'Delete', '3ring-domain-manager' ); ?></a>
 									</td>
 								</tr>
 							<?php endforeach; ?>
@@ -171,14 +188,14 @@ final class Providers_Page {
 				<div class="dm-panel">
 					<div class="dm-panel__head">
 						<h2>
-							<?php echo Ui::icon( $editing ? 'settings' : 'plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							<?php Ui::print_icon( $editing ? 'settings' : 'plus' ); ?>
 							<?php echo $editing ? esc_html__( 'Edit provider', '3ring-domain-manager' ) : esc_html__( 'Add provider', '3ring-domain-manager' ); ?>
 						</h2>
 					</div>
 					<div class="dm-panel__body">
 					<form method="post">
-						<?php wp_nonce_field( 'dm_save_provider' ); ?>
-						<input type="hidden" name="dm_save_provider" value="1" />
+						<?php wp_nonce_field( 'rindoma_save_provider' ); ?>
+						<input type="hidden" name="rindoma_save_provider" value="1" />
 						<input type="hidden" name="provider_id" value="<?php echo esc_attr( (string) ( $editing ? $editing->id : 0 ) ); ?>" />
 						<table class="form-table" role="presentation">
 							<tr>
@@ -229,7 +246,7 @@ final class Providers_Page {
 						</table>
 						<?php submit_button( $editing ? __( 'Update provider', '3ring-domain-manager' ) : __( 'Add provider', '3ring-domain-manager' ) ); ?>
 						<?php if ( $editing ) : ?>
-							<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=dm-providers' ) ); ?>"><?php esc_html_e( 'Cancel', '3ring-domain-manager' ); ?></a>
+							<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=rindoma-providers' ) ); ?>"><?php esc_html_e( 'Cancel', '3ring-domain-manager' ); ?></a>
 						<?php endif; ?>
 					</form>
 					</div>

@@ -47,7 +47,7 @@ final class Autoloader {
 			$subdir = strtolower( implode( '/', $parts ) ) . '/';
 		}
 
-		$path = DM_PLUGIN_DIR . 'includes/' . $subdir . $file;
+		$path = RINDOMA_PLUGIN_DIR . 'includes/' . $subdir . $file;
 
 		if ( is_readable( $path ) ) {
 			require_once $path;

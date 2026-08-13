@@ -21,7 +21,7 @@ Features include:
 * Renewals, notes, and document uploads tied to each domain
 * Manual DNS record tracking per domain
 * Email alerts for upcoming expiries and review-due dates (WP-Cron + opportunistic admin checks)
-* Optional frontend shortcode `[domain-list]` for a public/read-only domain table
+* Optional frontend shortcode `[3ring-domain-list]` for a public/read-only domain table
 * CSV import/export for portfolio data
 * Configurable brand color for the admin UI
 
@@ -35,7 +35,7 @@ On activation, the plugin creates its custom database tables automatically.
 2. Activate **3RING Domain Manager** through the **Plugins** screen.
 3. Open **Domain Manager** in the admin menu.
 4. Optionally grant Domain Manager access on user profiles, and configure **Settings** (alert windows, brand color, etc.).
-5. Optional: add `[domain-list]` to a page to show the portfolio on the front end.
+5. Optional: add `[3ring-domain-list]` to a page to show the portfolio on the front end.
 
 == Frequently Asked Questions ==
 
@@ -66,7 +66,8 @@ By default, options are removed and tables are kept. You can enable dropping tab
 == Changelog ==
 
 = 1.0.0 =
-* Initial public release: domain portfolio, providers, renewals, documents, DNS records, expiry/review email alerts, CSV import/export, and `[domain-list]` shortcode
+* Initial public release: domain portfolio, providers, renewals, documents, DNS records, expiry/review email alerts, CSV import/export, and `[3ring-domain-list]` shortcode
+* Public identifiers use the `rindoma` / `RINDOMA` prefix to avoid collisions with other plugins
 
 == Upgrade Notice ==
 

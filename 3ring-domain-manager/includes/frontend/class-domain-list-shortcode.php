@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend [domain-list] shortcode.
+ * Frontend [3ring-domain-list] shortcode.
  *
  * @package ThreeRing\DomainManager
  */
@@ -21,17 +21,10 @@ defined( 'ABSPATH' ) || exit;
 final class Domain_List_Shortcode {
 
 	/**
-	 * Whether critical CSS was printed this request.
-	 *
-	 * @var bool
-	 */
-	private static $styles_printed = false;
-
-	/**
 	 * Register shortcode and assets.
 	 */
 	public function register(): void {
-		add_shortcode( 'domain-list', array( $this, 'render' ) );
+		add_shortcode( '3ring-domain-list', array( $this, 'render' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
 	}
 
@@ -39,24 +32,30 @@ final class Domain_List_Shortcode {
 	 * Register (but do not always enqueue) frontend assets.
 	 */
 	public function register_assets(): void {
+		if ( wp_style_is( 'rindoma-domain-list', 'registered' ) ) {
+			return;
+		}
+
 		wp_register_style(
-			'dm-domain-list',
-			DM_PLUGIN_URL . 'assets/css/domain-list.css',
+			'rindoma-domain-list',
+			RINDOMA_PLUGIN_URL . 'assets/css/domain-list.css',
 			array(),
-			DM_VERSION
+			RINDOMA_VERSION
 		);
 
+		wp_add_inline_style( 'rindoma-domain-list', $this->critical_css() );
+
 		wp_register_script(
-			'dm-domain-list',
-			DM_PLUGIN_URL . 'assets/js/domain-list.js',
+			'rindoma-domain-list',
+			RINDOMA_PLUGIN_URL . 'assets/js/domain-list.js',
 			array(),
-			DM_VERSION,
+			RINDOMA_VERSION,
 			true
 		);
 	}
 
 	/**
-	 * Critical CSS printed with the shortcode so theme/Elementor cannot override it via cache order.
+	 * Extra-specificity CSS attached to the enqueued stylesheet via wp_add_inline_style().
 	 */
 	private function critical_css(): string {
 		return <<<'CSS'
@@ -87,8 +86,12 @@ CSS;
 			return '';
 		}
 
-		wp_enqueue_style( 'dm-domain-list' );
-		wp_enqueue_script( 'dm-domain-list' );
+		if ( ! wp_style_is( 'rindoma-domain-list', 'registered' ) ) {
+			$this->register_assets();
+		}
+
+		wp_enqueue_style( 'rindoma-domain-list' );
+		wp_enqueue_script( 'rindoma-domain-list' );
 
 		$repo   = new Domains_Repository();
 		$result = $repo->query(
@@ -113,11 +116,6 @@ CSS;
 		$th_style = 'background-color:#f3f3f3!important;color:#111!important;';
 
 		ob_start();
-
-		if ( ! self::$styles_printed ) {
-			self::$styles_printed = true;
-			echo '<style id="dm-domain-list-critical">' . $this->critical_css() . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		}
 		?>
 		<div class="dm-domain-list">
 			<table class="dm-domain-list-table" data-dm-sortable="1">

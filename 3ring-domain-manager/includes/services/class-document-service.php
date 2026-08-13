@@ -23,7 +23,7 @@ final class Document_Service {
 	 * Register hooks.
 	 */
 	public function register(): void {
-		add_action( 'admin_post_dm_download_document', array( $this, 'handle_download' ) );
+		add_action( 'admin_post_rindoma_download_document', array( $this, 'handle_download' ) );
 		add_filter( 'wp_get_attachment_url', array( $this, 'filter_private_url' ), 10, 2 );
 		add_filter( 'attachment_link', array( $this, 'filter_private_attachment_link' ), 10, 2 );
 		add_filter( 'rest_prepare_attachment', array( $this, 'filter_rest_attachment' ), 10, 3 );
@@ -57,13 +57,13 @@ final class Document_Service {
 	 */
 	public function upload( int $domain_id, array $file, string $title = '', string $doc_type = 'other' ) {
 		if ( empty( $file['tmp_name'] ) ) {
-			return new \WP_Error( 'dm_upload', __( 'No file uploaded.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_upload', __( 'No file uploaded.', '3ring-domain-manager' ) );
 		}
 
-		$settings = get_option( 'dm_settings', array() );
+		$settings = get_option( 'rindoma_settings', array() );
 		$max_mb   = ! empty( $settings['max_upload_mb'] ) ? (int) $settings['max_upload_mb'] : 10;
 		if ( ! empty( $file['size'] ) && (int) $file['size'] > $max_mb * MB_IN_BYTES ) {
-			return new \WP_Error( 'dm_upload', sprintf( /* translators: %d: megabytes */ __( 'File exceeds the maximum size of %d MB.', '3ring-domain-manager' ), $max_mb ) );
+			return new \WP_Error( 'rindoma_upload', sprintf( /* translators: %d: megabytes */ __( 'File exceeds the maximum size of %d MB.', '3ring-domain-manager' ), $max_mb ) );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -77,7 +77,7 @@ final class Document_Service {
 
 		$moved = wp_handle_upload( $file, $overrides );
 		if ( isset( $moved['error'] ) ) {
-			return new \WP_Error( 'dm_upload', $moved['error'] );
+			return new \WP_Error( 'rindoma_upload', $moved['error'] );
 		}
 
 		$attachment = array(
@@ -95,8 +95,8 @@ final class Document_Service {
 		$meta = wp_generate_attachment_metadata( $attachment_id, $moved['file'] );
 		wp_update_attachment_metadata( $attachment_id, $meta );
 
-		update_post_meta( $attachment_id, '_dm_private', 1 );
-		update_post_meta( $attachment_id, '_dm_domain_id', $domain_id );
+		update_post_meta( $attachment_id, '_rindoma_private', 1 );
+		update_post_meta( $attachment_id, '_rindoma_domain_id', $domain_id );
 
 		$doc_id = ( new Documents_Repository() )->insert(
 			array(
@@ -108,7 +108,7 @@ final class Document_Service {
 		);
 
 		if ( ! $doc_id ) {
-			return new \WP_Error( 'dm_upload', __( 'Could not save document record.', '3ring-domain-manager' ) );
+			return new \WP_Error( 'rindoma_upload', __( 'Could not save document record.', '3ring-domain-manager' ) );
 		}
 
 		return $doc_id;
@@ -121,8 +121,8 @@ final class Document_Service {
 	 */
 	public static function download_url( int $document_id ): string {
 		return wp_nonce_url(
-			admin_url( 'admin-post.php?action=dm_download_document&id=' . $document_id ),
-			'dm_download_document_' . $document_id
+			admin_url( 'admin-post.php?action=rindoma_download_document&id=' . $document_id ),
+			'rindoma_download_document_' . $document_id
 		);
 	}
 
@@ -135,7 +135,7 @@ final class Document_Service {
 		}
 
 		$document_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
-		if ( ! $document_id || ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'dm_download_document_' . $document_id ) ) {
+		if ( ! $document_id || ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'rindoma_download_document_' . $document_id ) ) {
 			wp_die( esc_html__( 'Invalid download request.', '3ring-domain-manager' ), 403 );
 		}
 
@@ -168,7 +168,7 @@ final class Document_Service {
 	 * @param int    $attachment_id Attachment ID.
 	 */
 	public function filter_private_url( string $url, int $attachment_id ): string {
-		if ( get_post_meta( $attachment_id, '_dm_private', true ) ) {
+		if ( get_post_meta( $attachment_id, '_rindoma_private', true ) ) {
 			return '';
 		}
 		return $url;
@@ -181,7 +181,7 @@ final class Document_Service {
 	 * @param int    $post_id Attachment ID.
 	 */
 	public function filter_private_attachment_link( string $link, int $post_id ): string {
-		if ( get_post_meta( $post_id, '_dm_private', true ) ) {
+		if ( get_post_meta( $post_id, '_rindoma_private', true ) ) {
 			return '';
 		}
 		return $link;
@@ -197,7 +197,7 @@ final class Document_Service {
 	 */
 	public function filter_rest_attachment( $response, $post, $request ) {
 		unset( $request );
-		if ( get_post_meta( $post->ID, '_dm_private', true ) && ! Capabilities::current_user_can_view() ) {
+		if ( get_post_meta( $post->ID, '_rindoma_private', true ) && ! Capabilities::current_user_can_view() ) {
 			return new \WP_Error( 'rest_forbidden', __( 'Private Domain Manager attachment.', '3ring-domain-manager' ), array( 'status' => 403 ) );
 		}
 		return $response;

@@ -23,11 +23,11 @@ final class Settings_Page {
 	 * Save settings.
 	 */
 	public static function maybe_handle_save(): void {
-		if ( empty( $_POST['dm_save_settings'] ) ) {
+		if ( empty( $_POST['rindoma_save_settings'] ) ) {
 			return;
 		}
 
-		if ( ! isset( $_GET['page'] ) || 'dm-settings' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['page'] ) || 'rindoma-settings' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
@@ -35,7 +35,7 @@ final class Settings_Page {
 			wp_die( esc_html__( 'Permission denied.', '3ring-domain-manager' ) );
 		}
 
-		check_admin_referer( 'dm_save_settings' );
+		check_admin_referer( 'rindoma_save_settings' );
 
 		$windows_raw = isset( $_POST['alert_windows'] ) ? sanitize_text_field( wp_unslash( $_POST['alert_windows'] ) ) : '90,60,30';
 		$windows     = array_values(
@@ -62,8 +62,8 @@ final class Settings_Page {
 			'brand_color'              => Brand::sanitize( isset( $_POST['brand_color'] ) ? wp_unslash( $_POST['brand_color'] ) : Brand::DEFAULT_COLOR ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		);
 
-		update_option( 'dm_settings', $settings, false );
-		wp_safe_redirect( admin_url( 'admin.php?page=dm-settings&message=saved' ) );
+		update_option( 'rindoma_settings', $settings, false );
+		wp_safe_redirect( admin_url( 'admin.php?page=rindoma-settings&message=saved' ) );
 		exit;
 	}
 
@@ -71,11 +71,11 @@ final class Settings_Page {
 	 * Send a test notification email.
 	 */
 	public static function maybe_handle_test_email(): void {
-		if ( empty( $_POST['dm_test_email'] ) ) {
+		if ( empty( $_POST['rindoma_test_email'] ) ) {
 			return;
 		}
 
-		if ( ! isset( $_GET['page'] ) || 'dm-settings' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['page'] ) || 'rindoma-settings' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
@@ -83,12 +83,12 @@ final class Settings_Page {
 			wp_die( esc_html__( 'Permission denied.', '3ring-domain-manager' ) );
 		}
 
-		check_admin_referer( 'dm_test_email' );
+		check_admin_referer( 'rindoma_test_email' );
 
 		$result = ( new Alert_Service() )->send_test_email();
-		set_transient( 'dm_test_email_result_' . get_current_user_id(), $result, MINUTE_IN_SECONDS );
+		set_transient( 'rindoma_test_email_result_' . get_current_user_id(), $result, MINUTE_IN_SECONDS );
 
-		wp_safe_redirect( admin_url( 'admin.php?page=dm-settings&message=test_email' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=rindoma-settings&message=test_email' ) );
 		exit;
 	}
 
@@ -101,7 +101,7 @@ final class Settings_Page {
 		}
 
 		$settings = wp_parse_args(
-			get_option( 'dm_settings', array() ),
+			get_option( 'rindoma_settings', array() ),
 			array(
 				'alert_windows'            => array( 90, 60, 30 ),
 				'review_interval_days'     => 180,
@@ -118,8 +118,8 @@ final class Settings_Page {
 
 		$test_result = null;
 		if ( 'test_email' === $message ) {
-			$test_result = get_transient( 'dm_test_email_result_' . get_current_user_id() );
-			delete_transient( 'dm_test_email_result_' . get_current_user_id() );
+			$test_result = get_transient( 'rindoma_test_email_result_' . get_current_user_id() );
+			delete_transient( 'rindoma_test_email_result_' . get_current_user_id() );
 		}
 		?>
 		<div class="wrap dm-wrap">
@@ -162,11 +162,11 @@ final class Settings_Page {
 			<?php endif; ?>
 
 			<form method="post">
-				<?php wp_nonce_field( 'dm_save_settings' ); ?>
-				<input type="hidden" name="dm_save_settings" value="1" />
+				<?php wp_nonce_field( 'rindoma_save_settings' ); ?>
+				<input type="hidden" name="rindoma_save_settings" value="1" />
 				<div class="dm-panel">
 					<div class="dm-panel__head">
-						<h2><?php echo Ui::icon( 'settings' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'General', '3ring-domain-manager' ); ?></h2>
+						<h2><?php Ui::print_icon( 'settings' ); ?><?php esc_html_e( 'General', '3ring-domain-manager' ); ?></h2>
 					</div>
 					<div class="dm-panel__body">
 				<table class="form-table" role="presentation">
@@ -213,7 +213,7 @@ final class Settings_Page {
 
 			<div class="dm-panel">
 				<div class="dm-panel__head">
-					<h2><?php echo Ui::icon( 'bell' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Email notifications', '3ring-domain-manager' ); ?></h2>
+					<h2><?php Ui::print_icon( 'bell' ); ?><?php esc_html_e( 'Email notifications', '3ring-domain-manager' ); ?></h2>
 					<span class="dm-panel__meta"><?php esc_html_e( 'Verify that WordPress can deliver Domain Manager alerts', '3ring-domain-manager' ); ?></span>
 				</div>
 				<div class="dm-panel__body">
@@ -221,8 +221,8 @@ final class Settings_Page {
 						<?php esc_html_e( 'Sends a test message to all Domain Managers using the same wp_mail() path as expiry and review alerts. No fake domain is required.', '3ring-domain-manager' ); ?>
 					</p>
 					<form method="post">
-						<?php wp_nonce_field( 'dm_test_email' ); ?>
-						<input type="hidden" name="dm_test_email" value="1" />
+						<?php wp_nonce_field( 'rindoma_test_email' ); ?>
+						<input type="hidden" name="rindoma_test_email" value="1" />
 						<?php submit_button( __( 'Send test email', '3ring-domain-manager' ), 'secondary', 'submit', false ); ?>
 					</form>
 				</div>
@@ -230,12 +230,12 @@ final class Settings_Page {
 
 			<div class="dm-panel">
 				<div class="dm-panel__head">
-					<h2><?php echo Ui::icon( 'users' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e( 'Current Domain Managers', '3ring-domain-manager' ); ?></h2>
+					<h2><?php Ui::print_icon( 'users' ); ?><?php esc_html_e( 'Current Domain Managers', '3ring-domain-manager' ); ?></h2>
 					<span class="dm-panel__meta"><?php esc_html_e( 'Access is granted on each user’s Edit User screen', '3ring-domain-manager' ); ?></span>
 				</div>
 				<div class="dm-panel__body">
 					<?php if ( empty( $managers ) ) : ?>
-						<?php echo Ui::empty_state( __( 'No users currently have Domain Manager capabilities.', '3ring-domain-manager' ), 'users' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php Ui::print_empty_state( __( 'No users currently have Domain Manager capabilities.', '3ring-domain-manager' ), 'users' ); ?>
 					<?php else : ?>
 						<ul class="dm-feed">
 							<?php foreach ( $managers as $user ) : ?>
@@ -245,7 +245,7 @@ final class Settings_Page {
 										<span class="dm-cell-sub"><?php echo esc_html( $user->user_login ); ?> · <?php echo esc_html( $user->user_email ); ?></span>
 									</span>
 									<?php if ( Capabilities::is_plugin_admin_user( $user ) ) : ?>
-										<?php echo Ui::badge( __( 'Plugin Administrator', '3ring-domain-manager' ), 'brand' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+										<?php Ui::print_badge( __( 'Plugin Administrator', '3ring-domain-manager' ), 'brand' ); ?>
 									<?php endif; ?>
 								</li>
 							<?php endforeach; ?>

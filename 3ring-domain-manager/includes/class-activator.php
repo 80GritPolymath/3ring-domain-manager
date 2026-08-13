@@ -19,13 +19,13 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Activator {
 
-	public const CRON_HOOK = 'dm_daily_alert_check';
+	public const CRON_HOOK = 'rindoma_daily_alert_check';
 
 	/**
 	 * Run on plugin activation.
 	 */
 	public static function activate(): void {
-		Schema::install();
+		Schema::maybe_upgrade();
 
 		$defaults = array(
 			'alert_windows'            => array( 90, 60, 30 ),
@@ -36,8 +36,8 @@ final class Activator {
 			'brand_color'              => Brand::DEFAULT_COLOR,
 		);
 
-		if ( false === get_option( 'dm_settings' ) ) {
-			add_option( 'dm_settings', $defaults, '', false );
+		if ( false === get_option( 'rindoma_settings' ) ) {
+			add_option( 'rindoma_settings', $defaults, '', false );
 		}
 
 		// Grant Plugin Administrator to the user activating the plugin.
@@ -47,9 +47,9 @@ final class Activator {
 			: Capabilities::grant_plugin_admin();
 
 		if ( ! $granted ) {
-			update_option( 'dm_missing_admin_user', 1, false );
+			update_option( 'rindoma_missing_admin_user', 1, false );
 		} else {
-			delete_option( 'dm_missing_admin_user' );
+			delete_option( 'rindoma_missing_admin_user' );
 		}
 
 		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {

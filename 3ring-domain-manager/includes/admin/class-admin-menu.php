@@ -78,7 +78,7 @@ final class Admin_Menu {
 			__( 'Domains', '3ring-domain-manager' ),
 			__( 'Domains', '3ring-domain-manager' ),
 			Capabilities::VIEW,
-			'dm-domains',
+			'rindoma-domains',
 			array( Domain_Edit_Page::class, 'render_list_or_edit' )
 		);
 
@@ -87,7 +87,7 @@ final class Admin_Menu {
 			__( 'Add Domain', '3ring-domain-manager' ),
 			__( 'Add Domain', '3ring-domain-manager' ),
 			Capabilities::EDIT,
-			'dm-domain-new',
+			'rindoma-domain-new',
 			array( Domain_Edit_Page::class, 'render_new' )
 		);
 
@@ -96,7 +96,7 @@ final class Admin_Menu {
 			__( 'Providers', '3ring-domain-manager' ),
 			__( 'Providers', '3ring-domain-manager' ),
 			Capabilities::MANAGE,
-			'dm-providers',
+			'rindoma-providers',
 			array( Providers_Page::class, 'render' )
 		);
 
@@ -105,7 +105,7 @@ final class Admin_Menu {
 			__( 'Import / Export', '3ring-domain-manager' ),
 			__( 'Import / Export', '3ring-domain-manager' ),
 			Capabilities::MANAGE,
-			'dm-import-export',
+			'rindoma-import-export',
 			array( Import_Export_Page::class, 'render' )
 		);
 
@@ -114,7 +114,7 @@ final class Admin_Menu {
 			__( 'Settings', '3ring-domain-manager' ),
 			__( 'Settings', '3ring-domain-manager' ),
 			Capabilities::MANAGE,
-			'dm-settings',
+			'rindoma-settings',
 			array( Settings_Page::class, 'render' )
 		);
 	}

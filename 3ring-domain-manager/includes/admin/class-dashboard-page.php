@@ -37,10 +37,10 @@ final class Dashboard_Page {
 
 		$stats         = ( new Domains_Repository() )->dashboard_stats();
 		$alerts        = ( new Alerts_Repository() )->recent( 10 );
-		$base          = admin_url( 'admin.php?page=dm-domains' );
+		$base          = admin_url( 'admin.php?page=rindoma-domains' );
 		$domains_table = new Domains_List_Table( 'dashboard' );
 		$domains_table->prepare_items();
 
-		include DM_PLUGIN_DIR . 'includes/admin/views/dashboard.php';
+		include RINDOMA_PLUGIN_DIR . 'includes/admin/views/dashboard.php';
 	}
 }

@@ -16,12 +16,12 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Capabilities {
 
-	public const VIEW   = 'dm_view_domains';
-	public const EDIT   = 'dm_edit_domains';
-	public const MANAGE = 'dm_manage_domains';
-	public const ADMIN  = 'dm_admin_plugin';
+	public const VIEW   = 'rindoma_view_domains';
+	public const EDIT   = 'rindoma_edit_domains';
+	public const MANAGE = 'rindoma_manage_domains';
+	public const ADMIN  = 'rindoma_admin_plugin';
 
-	public const PLUGIN_ADMIN_OPTION = 'dm_plugin_admin_user_id';
+	public const PLUGIN_ADMIN_OPTION = 'rindoma_plugin_admin_user_id';
 
 	/**
 	 * All plugin capabilities.
@@ -125,7 +125,7 @@ final class Capabilities {
 	}
 
 	/**
-	 * Revoke Domain Manager caps from a user (does not touch dm_admin_plugin).
+	 * Revoke Domain Manager caps from a user (does not touch rindoma_admin_plugin).
 	 *
 	 * @param \WP_User $user User object.
 	 */
@@ -136,7 +136,7 @@ final class Capabilities {
 	}
 
 	/**
-	 * Whether a user is a Plugin Administrator (has dm_admin_plugin).
+	 * Whether a user is a Plugin Administrator (has rindoma_admin_plugin).
 	 *
 	 * @param \WP_User $user User object.
 	 */

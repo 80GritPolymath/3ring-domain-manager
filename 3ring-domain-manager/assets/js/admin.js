@@ -228,7 +228,7 @@
 				}
 			},
 			clear: function () {
-				var fallback = (window.dmBrand && dmBrand.defaultColor) ? dmBrand.defaultColor : '#3300FF';
+				var fallback = (window.rindomaBrand && rindomaBrand.defaultColor) ? rindomaBrand.defaultColor : '#3300FF';
 				$input.val(fallback);
 				applyBrandPreview(fallback);
 			}

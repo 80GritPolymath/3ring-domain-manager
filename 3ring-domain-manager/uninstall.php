@@ -11,37 +11,38 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-$dm_settings = get_option( 'dm_settings', array() );
-$dm_drop     = ! empty( $dm_settings['drop_tables_on_uninstall'] );
+$rindoma_settings = get_option( 'rindoma_settings', array() );
+$rindoma_drop     = ! empty( $rindoma_settings['drop_tables_on_uninstall'] );
 
-delete_option( 'dm_settings' );
-delete_option( 'dm_db_version' );
-delete_option( 'dm_missing_admin_user' );
-delete_option( 'dm_plugin_admin_user_id' );
+delete_option( 'rindoma_settings' );
+delete_option( 'rindoma_db_version' );
+delete_option( 'rindoma_missing_admin_user' );
+delete_option( 'rindoma_plugin_admin_user_id' );
+delete_option( 'rindoma_legacy_migrated' );
 
-$dm_timestamp = wp_next_scheduled( 'dm_daily_alert_check' );
-if ( $dm_timestamp ) {
-	wp_unschedule_event( $dm_timestamp, 'dm_daily_alert_check' );
+$rindoma_timestamp = wp_next_scheduled( 'rindoma_daily_alert_check' );
+if ( $rindoma_timestamp ) {
+	wp_unschedule_event( $rindoma_timestamp, 'rindoma_daily_alert_check' );
 }
 
-if ( ! $dm_drop ) {
+if ( ! $rindoma_drop ) {
 	return;
 }
 
 global $wpdb;
 
-$dm_tables = array(
-	$wpdb->prefix . 'dm_providers',
-	$wpdb->prefix . 'dm_domains',
-	$wpdb->prefix . 'dm_renewals',
-	$wpdb->prefix . 'dm_documents',
-	$wpdb->prefix . 'dm_notes',
-	$wpdb->prefix . 'dm_dns_records',
-	$wpdb->prefix . 'dm_alerts',
-	$wpdb->prefix . 'dm_audit_log',
+$rindoma_tables = array(
+	$wpdb->prefix . 'rindoma_providers',
+	$wpdb->prefix . 'rindoma_domains',
+	$wpdb->prefix . 'rindoma_renewals',
+	$wpdb->prefix . 'rindoma_documents',
+	$wpdb->prefix . 'rindoma_notes',
+	$wpdb->prefix . 'rindoma_dns_records',
+	$wpdb->prefix . 'rindoma_alerts',
+	$wpdb->prefix . 'rindoma_audit_log',
 );
 
-foreach ( $dm_tables as $dm_table ) {
+foreach ( $rindoma_tables as $rindoma_table ) {
 	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Uninstall table drop.
-	$wpdb->query( "DROP TABLE IF EXISTS {$dm_table}" );
+	$wpdb->query( "DROP TABLE IF EXISTS {$rindoma_table}" );
 }

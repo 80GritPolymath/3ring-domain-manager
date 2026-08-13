@@ -87,7 +87,7 @@ final class Plugin {
 			return;
 		}
 
-		if ( get_option( 'dm_missing_admin_user' ) ) {
+		if ( get_option( 'rindoma_missing_admin_user' ) ) {
 			echo '<div class="notice notice-warning"><p>';
 			echo esc_html__(
 				'3RING Domain Manager: Could not assign a Plugin Administrator. Deactivate and reactivate the plugin while logged in as a site administrator.',

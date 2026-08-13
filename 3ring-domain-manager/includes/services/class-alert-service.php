@@ -38,7 +38,7 @@ final class Alert_Service {
 			return;
 		}
 
-		$settings = get_option( 'dm_settings', array() );
+		$settings = get_option( 'rindoma_settings', array() );
 		$windows  = isset( $settings['alert_windows'] ) && is_array( $settings['alert_windows'] )
 			? array_map( 'intval', $settings['alert_windows'] )
 			: array( 90, 60, 30 );
@@ -125,7 +125,7 @@ final class Alert_Service {
 
 		$user     = wp_get_current_user();
 		$subject  = __( '[Domain Manager] Test email notification', '3ring-domain-manager' );
-		$settings = admin_url( 'admin.php?page=dm-settings' );
+		$settings = admin_url( 'admin.php?page=rindoma-settings' );
 
 		$body  = __( 'This is a test email from the 3ring Domain Manager plugin.', '3ring-domain-manager' ) . "\n\n";
 		$body .= sprintf(
@@ -186,7 +186,7 @@ final class Alert_Service {
 			return;
 		}
 
-		$edit_url = admin_url( 'admin.php?page=dm-domains&action=edit&domain_id=' . (int) $domain->id );
+		$edit_url = admin_url( 'admin.php?page=rindoma-domains&action=edit&domain_id=' . (int) $domain->id );
 		$subject  = sprintf(
 			/* translators: 1: domain name, 2: days */
 			__( '[Domain Manager] %1$s expires in %2$d days', '3ring-domain-manager' ),
@@ -234,7 +234,7 @@ final class Alert_Service {
 			return;
 		}
 
-		$edit_url = admin_url( 'admin.php?page=dm-domains&action=edit&domain_id=' . (int) $domain->id );
+		$edit_url = admin_url( 'admin.php?page=rindoma-domains&action=edit&domain_id=' . (int) $domain->id );
 		$subject  = sprintf(
 			/* translators: %s: domain name */
 			__( '[Domain Manager] Review due for %s', '3ring-domain-manager' ),

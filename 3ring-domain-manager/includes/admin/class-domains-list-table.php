@@ -137,17 +137,29 @@ final class Domains_List_Table extends \WP_List_Table {
 				$column_display_name = '<input type="checkbox" />';
 			}
 
-			$tag   = ( 'cb' === $column_key ) ? 'td' : 'th';
-			$scope = ( 'th' === $tag ) ? 'scope="col"' : '';
-			$id    = $with_id ? "id='" . esc_attr( $column_key ) . "'" : '';
+			$tag = ( 'cb' === $column_key ) ? 'td' : 'th';
 
-			$data_attrs = '';
-			if ( $sort_type ) {
-				$data_attrs = ' data-sort-type="' . esc_attr( $sort_type ) . '" tabindex="0" role="columnheader" aria-sort="none"';
+			echo '<' . tag_escape( $tag );
+			if ( 'th' === $tag ) {
+				echo ' scope="col"';
 			}
-
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- attributes escaped above; label is translated plain text or checkbox markup.
-			echo "<{$tag} {$scope} {$id} class='" . esc_attr( implode( ' ', $class ) ) . "'{$data_attrs}>{$column_display_name}</{$tag}>";
+			if ( $with_id ) {
+				echo ' id="' . esc_attr( $column_key ) . '"';
+			}
+			echo ' class="' . esc_attr( implode( ' ', $class ) ) . '"';
+			if ( $sort_type ) {
+				echo ' data-sort-type="' . esc_attr( $sort_type ) . '" tabindex="0" role="columnheader" aria-sort="none"';
+			}
+			echo '>';
+			echo wp_kses(
+				$column_display_name,
+				array(
+					'input' => array(
+						'type' => true,
+					),
+				)
+			);
+			echo '</' . tag_escape( $tag ) . '>';
 		}
 	}
 
@@ -209,12 +221,10 @@ final class Domains_List_Table extends \WP_List_Table {
 				$classes .= ' hidden';
 			}
 
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- class/attr escaped; cell content from column_* methods.
 			echo '<td class="' . esc_attr( $classes ) . '" data-sort-value="' . esc_attr( $this->sort_value( $item, $column_name ) ) . '" data-colname="' . esc_attr( wp_strip_all_tags( (string) $column_display_name ) ) . '">';
 
 			if ( method_exists( $this, '_column_' . $column_name ) ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo call_user_func(
+				$cell = call_user_func(
 					array( $this, '_column_' . $column_name ),
 					$item,
 					$classes,
@@ -222,15 +232,13 @@ final class Domains_List_Table extends \WP_List_Table {
 					$primary
 				);
 			} elseif ( method_exists( $this, 'column_' . $column_name ) ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo call_user_func( array( $this, 'column_' . $column_name ), $item );
+				$cell = call_user_func( array( $this, 'column_' . $column_name ), $item );
 			} else {
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo $this->column_default( $item, $column_name );
+				$cell = $this->column_default( $item, $column_name );
 			}
 
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo $this->handle_row_actions( $item, $column_name, $primary );
+			echo wp_kses( (string) $cell, Ui::allowed_html() );
+			echo wp_kses( (string) $this->handle_row_actions( $item, $column_name, $primary ), Ui::allowed_html() );
 			echo '</td>';
 		}
 	}
@@ -293,7 +301,7 @@ final class Domains_List_Table extends \WP_List_Table {
 	 * Empty state.
 	 */
 	public function no_items(): void {
-		echo Ui::empty_state( __( 'No domains match the current filters.', '3ring-domain-manager' ), 'globe' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		Ui::print_empty_state( __( 'No domains match the current filters.', '3ring-domain-manager' ), 'globe' );
 	}
 
 	/**
@@ -312,8 +320,8 @@ final class Domains_List_Table extends \WP_List_Table {
 	 * @param object $item Item.
 	 */
 	protected function column_domain_name( $item ): string {
-		$edit_url    = admin_url( 'admin.php?page=dm-domains&action=edit&domain_id=' . (int) $item->id );
-		$details_url = admin_url( 'admin.php?page=dm-domains&action=details&domain_id=' . (int) $item->id );
+		$edit_url    = admin_url( 'admin.php?page=rindoma-domains&action=edit&domain_id=' . (int) $item->id );
+		$details_url = admin_url( 'admin.php?page=rindoma-domains&action=details&domain_id=' . (int) $item->id );
 		$visit_url   = Domains_Repository::visit_url( $item );
 
 		// Order: Details | Visit | Edit | Archive | Delete.
@@ -329,12 +337,12 @@ final class Domains_List_Table extends \WP_List_Table {
 
 		if ( Capabilities::current_user_can_manage() ) {
 			if ( empty( $item->archived_at ) ) {
-				$actions['archive'] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=dm-domains&action=archive&domain_id=' . (int) $item->id ), 'dm_archive_' . $item->id ) ) . '">' . esc_html__( 'Archive', '3ring-domain-manager' ) . '</a>';
+				$actions['archive'] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=rindoma-domains&action=archive&domain_id=' . (int) $item->id ), 'rindoma_archive_' . $item->id ) ) . '">' . esc_html__( 'Archive', '3ring-domain-manager' ) . '</a>';
 			} else {
-				$actions['restore'] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=dm-domains&action=restore&domain_id=' . (int) $item->id ), 'dm_restore_' . $item->id ) ) . '">' . esc_html__( 'Restore', '3ring-domain-manager' ) . '</a>';
+				$actions['restore'] = '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=rindoma-domains&action=restore&domain_id=' . (int) $item->id ), 'rindoma_restore_' . $item->id ) ) . '">' . esc_html__( 'Restore', '3ring-domain-manager' ) . '</a>';
 			}
 
-			$actions['delete'] = '<a class="dm-confirm-delete" href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=dm-domains&action=delete&domain_id=' . (int) $item->id ), 'dm_delete_' . $item->id ) ) . '">' . esc_html__( 'Delete', '3ring-domain-manager' ) . '</a>';
+			$actions['delete'] = '<a class="dm-confirm-delete" href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=rindoma-domains&action=delete&domain_id=' . (int) $item->id ), 'rindoma_delete_' . $item->id ) ) . '">' . esc_html__( 'Delete', '3ring-domain-manager' ) . '</a>';
 		}
 
 		$name = '<strong><a href="' . esc_url( $details_url ) . '">' . esc_html( $item->domain_name ) . '</a></strong>';

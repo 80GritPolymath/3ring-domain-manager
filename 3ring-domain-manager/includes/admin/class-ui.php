@@ -51,11 +51,125 @@ final class Ui {
 			return '';
 		}
 
-		return sprintf(
-			'<svg class="dm-icon %1$s" viewBox="0 0 24 24" aria-hidden="true" focusable="false">%2$s</svg>',
-			esc_attr( $class ),
-			$shapes[ $name ] // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup above.
+		return wp_kses(
+			sprintf(
+				'<svg class="dm-icon %1$s" viewBox="0 0 24 24" aria-hidden="true" focusable="false">%2$s</svg>',
+				esc_attr( $class ),
+				$shapes[ $name ]
+			),
+			self::allowed_html()
 		);
+	}
+
+	/**
+	 * Allowed HTML for plugin UI fragments (icons, badges, empty states, table cells).
+	 *
+	 * @return array<string, array<string, bool>>
+	 */
+	public static function allowed_html(): array {
+		$svg_child = array(
+			'cx'     => true,
+			'cy'     => true,
+			'r'      => true,
+			'd'      => true,
+			'x'      => true,
+			'y'      => true,
+			'width'  => true,
+			'height' => true,
+			'rx'     => true,
+		);
+
+		return array(
+			'svg'    => array(
+				'class'        => true,
+				'viewbox'      => true,
+				'aria-hidden'  => true,
+				'focusable'    => true,
+			),
+			'circle' => $svg_child,
+			'path'   => $svg_child,
+			'rect'   => $svg_child,
+			'span'   => array(
+				'class' => true,
+			),
+			'div'    => array(
+				'class' => true,
+			),
+			'p'      => array(
+				'class' => true,
+			),
+			'a'      => array(
+				'href'   => true,
+				'class'  => true,
+				'target' => true,
+				'rel'    => true,
+				'title'  => true,
+			),
+			'strong' => array(),
+			'em'     => array(),
+			'br'     => array(),
+			'button' => array(
+				'type'  => true,
+				'class' => true,
+			),
+			'input'  => array(
+				'type' => true,
+			),
+		);
+	}
+
+	/**
+	 * Print an escaped SVG icon.
+	 *
+	 * @param string $name  Icon key.
+	 * @param string $class Extra CSS classes.
+	 */
+	public static function print_icon( string $name, string $class = '' ): void {
+		echo wp_kses( self::icon( $name, $class ), self::allowed_html() );
+	}
+
+	/**
+	 * Print an escaped badge.
+	 *
+	 * @param string $label Visible label.
+	 * @param string $tone  Badge tone.
+	 * @param bool   $plain Hide the leading dot.
+	 */
+	public static function print_badge( string $label, string $tone = 'neutral', bool $plain = false ): void {
+		echo wp_kses( self::badge( $label, $tone, $plain ), self::allowed_html() );
+	}
+
+	/**
+	 * Print an escaped empty-state block.
+	 *
+	 * @param string $message Message.
+	 * @param string $icon    Icon key.
+	 */
+	public static function print_empty_state( string $message, string $icon = 'file' ): void {
+		echo wp_kses( self::empty_state( $message, $icon ), self::allowed_html() );
+	}
+
+	/**
+	 * Print an escaped HTML fragment built by this plugin.
+	 *
+	 * @param string $html HTML.
+	 */
+	public static function print_html( string $html ): void {
+		echo wp_kses( $html, self::allowed_html() );
+	}
+
+	/**
+	 * Muted placeholder dash.
+	 */
+	public static function muted_dash(): string {
+		return '<span class="dm-muted">&mdash;</span>';
+	}
+
+	/**
+	 * Print a muted placeholder dash.
+	 */
+	public static function print_muted_dash(): void {
+		echo wp_kses( self::muted_dash(), self::allowed_html() );
 	}
 
 	/**
@@ -84,7 +198,7 @@ final class Ui {
 		<div class="dm-hero">
 			<div class="dm-hero__inner">
 				<div class="dm-hero__title">
-					<p class="dm-hero__eyebrow"><?php echo self::icon( 'shield' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php echo esc_html( $args['eyebrow'] ); ?></p>
+					<p class="dm-hero__eyebrow"><?php self::print_icon( 'shield' ); ?><?php echo esc_html( $args['eyebrow'] ); ?></p>
 					<h1><?php echo esc_html( $args['title'] ); ?></h1>
 					<?php if ( $args['subtitle'] ) : ?>
 						<p class="dm-hero__sub"><?php echo esc_html( $args['subtitle'] ); ?></p>
@@ -94,7 +208,7 @@ final class Ui {
 					<div class="dm-hero__actions">
 						<?php foreach ( $args['actions'] as $action ) : ?>
 							<a
-								class="dm-btn <?php echo ! empty( $action['solid'] ) ? 'dm-btn--solid' : ''; ?>"
+								class="<?php echo esc_attr( ! empty( $action['solid'] ) ? 'dm-btn dm-btn--solid' : 'dm-btn' ); ?>"
 								href="<?php echo esc_url( $action['url'] ); ?>"
 								<?php if ( ! empty( $action['target'] ) ) : ?>
 									target="<?php echo esc_attr( $action['target'] ); ?>" rel="noopener noreferrer"
@@ -102,7 +216,7 @@ final class Ui {
 							>
 								<?php
 								if ( ! empty( $action['icon'] ) ) {
-									echo self::icon( $action['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+									self::print_icon( $action['icon'] );
 								}
 								echo esc_html( $action['label'] );
 								?>
@@ -133,25 +247,25 @@ final class Ui {
 				'can'   => Capabilities::current_user_can_view(),
 			),
 			array(
-				'slug'  => 'dm-domains',
+				'slug'  => 'rindoma-domains',
 				'label' => __( 'Domain List', '3ring-domain-manager' ),
 				'icon'  => 'globe',
 				'can'   => Capabilities::current_user_can_view(),
 			),
 			array(
-				'slug'  => 'dm-providers',
+				'slug'  => 'rindoma-providers',
 				'label' => __( 'Service Providers', '3ring-domain-manager' ),
 				'icon'  => 'server',
 				'can'   => Capabilities::current_user_can_manage(),
 			),
 			array(
-				'slug'  => 'dm-import-export',
+				'slug'  => 'rindoma-import-export',
 				'label' => __( 'Import / Export', '3ring-domain-manager' ),
 				'icon'  => 'transfer',
 				'can'   => Capabilities::current_user_can_manage(),
 			),
 			array(
-				'slug'  => 'dm-settings',
+				'slug'  => 'rindoma-settings',
 				'label' => __( 'Settings', '3ring-domain-manager' ),
 				'icon'  => 'settings',
 				'can'   => Capabilities::current_user_can_manage(),
@@ -168,10 +282,10 @@ final class Ui {
 				?>
 				<a
 					href="<?php echo esc_url( admin_url( 'admin.php?page=' . $item['slug'] ) ); ?>"
-					class="<?php echo $is_active ? 'is-active' : ''; ?>"
+					class="<?php echo esc_attr( $is_active ? 'is-active' : '' ); ?>"
 					<?php echo $is_active ? 'aria-current="page"' : ''; ?>
 				>
-					<?php echo self::icon( $item['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php self::print_icon( $item['icon'] ); ?>
 					<?php echo esc_html( $item['label'] ); ?>
 				</a>
 			<?php endforeach; ?>
@@ -195,7 +309,10 @@ final class Ui {
 			$classes .= ' dm-badge--plain';
 		}
 
-		return '<span class="' . esc_attr( $classes ) . '">' . esc_html( $label ) . '</span>';
+		return wp_kses(
+			'<span class="' . esc_attr( $classes ) . '">' . esc_html( $label ) . '</span>',
+			self::allowed_html()
+		);
 	}
 
 	/**
@@ -339,6 +456,9 @@ final class Ui {
 	 * @param string $icon    Icon key.
 	 */
 	public static function empty_state( string $message, string $icon = 'file' ): string {
-		return '<div class="dm-empty">' . self::icon( $icon ) . '<p>' . esc_html( $message ) . '</p></div>';
+		return wp_kses(
+			'<div class="dm-empty">' . self::icon( $icon ) . '<p>' . esc_html( $message ) . '</p></div>',
+			self::allowed_html()
+		);
 	}
 }

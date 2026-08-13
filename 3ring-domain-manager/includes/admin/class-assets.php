@@ -34,11 +34,11 @@ final class Assets {
 	public static function page_slugs(): array {
 		return array(
 			Admin_Menu::SLUG,
-			'dm-domains',
-			'dm-domain-new',
-			'dm-providers',
-			'dm-import-export',
-			'dm-settings',
+			'rindoma-domains',
+			'rindoma-domain-new',
+			'rindoma-providers',
+			'rindoma-import-export',
+			'rindoma-settings',
 		);
 	}
 
@@ -85,33 +85,33 @@ final class Assets {
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		wp_enqueue_style(
-			'dm-admin',
-			DM_PLUGIN_URL . 'assets/css/admin.css',
+			'rindoma-admin',
+			RINDOMA_PLUGIN_URL . 'assets/css/admin.css',
 			array(),
-			DM_VERSION
+			RINDOMA_VERSION
 		);
 
-		wp_add_inline_style( 'dm-admin', Brand::inline_css() );
+		wp_add_inline_style( 'rindoma-admin', Brand::inline_css() );
 
 		$script_deps = array( 'jquery' );
-		if ( 'dm-settings' === $page ) {
+		if ( 'rindoma-settings' === $page ) {
 			wp_enqueue_style( 'wp-color-picker' );
 			wp_enqueue_script( 'wp-color-picker' );
 			$script_deps[] = 'wp-color-picker';
 		}
 
 		wp_enqueue_script(
-			'dm-admin',
-			DM_PLUGIN_URL . 'assets/js/admin.js',
+			'rindoma-admin',
+			RINDOMA_PLUGIN_URL . 'assets/js/admin.js',
 			$script_deps,
-			DM_VERSION,
+			RINDOMA_VERSION,
 			true
 		);
 
-		if ( 'dm-settings' === $page ) {
+		if ( 'rindoma-settings' === $page ) {
 			wp_localize_script(
-				'dm-admin',
-				'dmBrand',
+				'rindoma-admin',
+				'rindomaBrand',
 				array(
 					'defaultColor' => Brand::DEFAULT_COLOR,
 				)

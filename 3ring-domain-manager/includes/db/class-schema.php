@@ -11,10 +11,17 @@ namespace ThreeRing\DomainManager\Db;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Custom tables; names come from Schema::table(), values use $wpdb->prepare().
+
 /**
  * Class Schema
  */
 final class Schema {
+
+	/**
+	 * Pre-1.0.0 identifier prefix (2 characters). Used only to migrate stored data.
+	 */
+	private const LEGACY = 'dm';
 
 	/**
 	 * Table short names.
@@ -42,19 +49,28 @@ final class Schema {
 	public static function table( string $key ): string {
 		global $wpdb;
 
-		return $wpdb->prefix . 'dm_' . $key;
+		return $wpdb->prefix . 'rindoma_' . $key;
+	}
+
+	/**
+	 * Whether a table exists (escapes LIKE wildcards in the name).
+	 *
+	 * @param string $table Full table name.
+	 */
+	private static function table_exists_named( string $table ): bool {
+		global $wpdb;
+
+		$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
+
+		return $found === $table;
 	}
 
 	/**
 	 * Whether all required tables exist.
 	 */
 	public static function tables_exist(): bool {
-		global $wpdb;
-
 		foreach ( self::table_keys() as $key ) {
-			$table = self::table( $key );
-			$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
-			if ( $found !== $table ) {
+			if ( ! self::table_exists_named( self::table( $key ) ) ) {
 				return false;
 			}
 		}
@@ -242,17 +258,140 @@ final class Schema {
 			dbDelta( $statement );
 		}
 
-		update_option( 'dm_db_version', DM_DB_VERSION, false );
+		update_option( 'rindoma_db_version', RINDOMA_DB_VERSION, false );
 	}
 
 	/**
 	 * Install/upgrade schema when the stored DB version is behind.
 	 */
 	public static function maybe_upgrade(): void {
-		$installed = get_option( 'dm_db_version', '' );
-		if ( DM_DB_VERSION !== $installed || ! self::tables_exist() ) {
+		global $wpdb;
+
+		self::migrate_legacy_prefix();
+
+		$legacy_domains = $wpdb->prefix . self::LEGACY . '_domains';
+		if ( self::table_exists_named( $legacy_domains ) ) {
+			return;
+		}
+
+		$installed = get_option( 'rindoma_db_version', '' );
+		if ( RINDOMA_DB_VERSION !== $installed || ! self::tables_exist() ) {
 			self::install();
 		}
+	}
+
+	/**
+	 * Copy tables, capabilities, cron, post meta, and options from the legacy 2-character prefix.
+	 *
+	 * Idempotent. Sets rindoma_legacy_migrated when finished so later requests skip this work.
+	 */
+	public static function migrate_legacy_prefix(): void {
+		global $wpdb;
+
+		if ( get_option( 'rindoma_legacy_migrated' ) ) {
+			return;
+		}
+
+		$has_old_options = false !== get_option( self::LEGACY . '_settings', false )
+			|| false !== get_option( self::LEGACY . '_db_version', false )
+			|| false !== get_option( self::LEGACY . '_plugin_admin_user_id', false );
+
+		$has_old_tables = self::table_exists_named( $wpdb->prefix . self::LEGACY . '_domains' );
+
+		if ( ! $has_old_options && ! $has_old_tables ) {
+			add_option( 'rindoma_legacy_migrated', 1, '', false );
+			return;
+		}
+
+		foreach ( self::table_keys() as $key ) {
+			$old_table = $wpdb->prefix . self::LEGACY . '_' . $key;
+			$new_table = self::table( $key );
+
+			if ( ! preg_match( '/^[A-Za-z0-9_]+$/', $old_table ) || ! preg_match( '/^[A-Za-z0-9_]+$/', $new_table ) ) {
+				continue;
+			}
+
+			if ( self::table_exists_named( $old_table ) && ! self::table_exists_named( $new_table ) ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- One-time table rename; names are validated.
+				$wpdb->query( "RENAME TABLE `{$old_table}` TO `{$new_table}`" );
+			}
+		}
+
+		$cap_map = array(
+			self::LEGACY . '_view_domains'   => 'rindoma_view_domains',
+			self::LEGACY . '_edit_domains'   => 'rindoma_edit_domains',
+			self::LEGACY . '_manage_domains' => 'rindoma_manage_domains',
+			self::LEGACY . '_admin_plugin'   => 'rindoma_admin_plugin',
+		);
+
+		$paged = 1;
+		do {
+			$users = get_users(
+				array(
+					'number' => 200,
+					'paged'  => $paged,
+					'fields' => 'all',
+				)
+			);
+
+			if ( ! is_array( $users ) || ! $users ) {
+				break;
+			}
+
+			foreach ( $users as $user ) {
+				if ( ! $user instanceof \WP_User ) {
+					continue;
+				}
+
+				foreach ( $cap_map as $old_cap => $new_cap ) {
+					if ( ! empty( $user->caps[ $old_cap ] ) ) {
+						$user->add_cap( $new_cap );
+						$user->remove_cap( $old_cap );
+					}
+				}
+			}
+
+			$paged++;
+		} while ( 200 === count( $users ) );
+
+		wp_unschedule_hook( self::LEGACY . '_daily_alert_check' );
+
+		$meta_map = array(
+			'_' . self::LEGACY . '_private'   => '_rindoma_private',
+			'_' . self::LEGACY . '_domain_id' => '_rindoma_domain_id',
+		);
+
+		foreach ( $meta_map as $old_meta => $new_meta ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-time post meta key rename.
+			$wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$wpdb->postmeta} SET meta_key = %s WHERE meta_key = %s",
+					$new_meta,
+					$old_meta
+				)
+			);
+		}
+
+		$option_suffixes = array(
+			'settings',
+			'db_version',
+			'missing_admin_user',
+			'plugin_admin_user_id',
+		);
+
+		foreach ( $option_suffixes as $suffix ) {
+			$old_key = self::LEGACY . '_' . $suffix;
+			$new_key = 'rindoma_' . $suffix;
+			$old_val = get_option( $old_key, false );
+
+			if ( false !== $old_val && false === get_option( $new_key, false ) ) {
+				add_option( $new_key, $old_val, '', false );
+			}
+
+			delete_option( $old_key );
+		}
+
+		update_option( 'rindoma_legacy_migrated', 1, false );
 	}
 
 	/**
